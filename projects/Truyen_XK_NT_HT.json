@@ -199,6 +199,67 @@
   "aspect_ratio": "16:9",
   "donghua_style": true,
   "character_bible": {
-    "characters": []
+    "characters": [
+      {
+        "name": "Lạc Trần",
+        "role": "Nam chính - Dược Tiên Xuyên Không",
+        "age": "Linh hồn: ngàn tuổi. Thể xác: 24 tuổi",
+        "look": "Gương mặt tuấn tú, thanh thoát với đường nét Á Đông rõ rệt. Đôi mắt sâu, bình tĩnh, ẩn chứa sự thông thái không hợp tuổi. Khí chất vừa có nét thoát tục của tiên nhân, vừa có sự vững chãi của một bác sĩ hiện đại.",
+        "hair": "Đen nhánh, hơi dài, thường ngày để xõa tự nhiên. Khi tập trung luyện đan hoặc chữa trị sẽ được búi lỏng bằng một cây trâm đơn giản.",
+        "outfit": "Thường ngày: quần áo đơn giản, thoải mái, tông màu sáng như áo sơ mi linen, quần kaki. Trong bệnh viện: áo blouse trắng nhưng luôn toát ra vẻ phi phàm. Khi chiến đấu: một lớp linh khí màu ngọc bích sẽ bao bọc quanh người, hoa văn cổ xưa ẩn hiện trên trang phục.",
+        "color_theme": "Xanh ngọc bích, Trắng, Xanh bạc hà.",
+        "notes": "Khi sử dụng 'Linh Nhãn', đồng tử phát ra ánh sáng vàng kim hoặc lục bảo nhẹ. Các động tác châm cứu, vận khí phải thể hiện được sự uyển chuyển, thanh thoát như một điệu múa, kết hợp giữa sự chính xác của y học và sự huyền ảo của tiên pháp."
+      },
+      {
+        "name": "Lãnh Băng Tâm",
+        "role": "Nữ chính - Giám Đốc Bệnh Viện Lạnh Lùng",
+        "age": "27 tuổi",
+        "look": "Vẻ đẹp sắc sảo, kiêu kỳ của một nữ cường nhân. Gương mặt trái xoan với làn da trắng sứ, đôi mắt phượng sắc bén và thông minh. Luôn giữ một tư thế chuyên nghiệp, toát ra khí chất lạnh lùng nhưng đầy cuốn hút.",
+        "hair": "Đen dài, thẳng mượt. Khi làm việc thường búi cao gọn gàng hoặc để kiểu tóc đuôi ngựa thanh lịch, thể hiện sự quyết đoán. Khi ở cạnh Lạc Trần sẽ có những khoảnh khắc xõa tóc, trông mềm mại hơn.",
+        "outfit": "Trang phục công sở được cắt may tinh xảo: suit, áo vest, chân váy bút chì. Chất liệu cao cấp, tôn dáng. Sau khi linh căn thức tỉnh, cô có thể đeo thêm trang sức bằng ngọc hoặc bạc có khắc hoa văn tinh tế.",
+        "color_theme": "Xanh băng, Bạc, Trắng, Đen.",
+        "notes": "Hiệu ứng khi linh căn thức tỉnh nên mang thuộc tính 'băng' hoặc 'ánh sáng', tạo ra những tinh thể băng lấp lánh hoặc luồng sáng tinh khiết để bảo vệ, đối lập với 'tà khí' u ám của kẻ địch. Sự thay đổi trong biểu cảm từ lạnh lùng sang ấm áp, tin tưởng cần được thể hiện tinh tế qua ánh mắt."
+      },
+      {
+        "name": "Điện Chủ Trường Sinh Điện",
+        "role": "Phản diện chính",
+        "age": "Bề ngoài: khoảng 40-45 tuổi. Thực tế: không rõ, đã sống rất lâu.",
+        "look": "Vẻ ngoài lịch lãm, nho nhã như một học giả hoặc doanh nhân thành đạt. Nụ cười luôn thường trực trên môi nhưng ánh mắt lại sâu thẳm, lạnh lẽo và tàn độc. Có một nốt ruồi son nơi đuôi mắt, tạo điểm nhấn yêu mị.",
+        "hair": "Màu bạch kim hoặc xám bạc, luôn được chải chuốt cẩn thận, thể hiện sự trau chuốt và quyền lực.",
+        "outfit": "Sự kết hợp giữa trang phục hiện đại đắt tiền và cổ phục. Thường mặc suit tối màu được may đo riêng bằng lụa cao cấp, nhưng cổ áo hoặc cổ tay áo có thêu hoa văn mây hoặc rồng chìm, mang hơi hướm vương giả cổ xưa.",
+        "color_theme": "Đỏ thẫm, Vàng sẫm, Đen.",
+        "notes": "Luôn có phong thái ung dung, tự tại, coi mọi thứ trong tầm kiểm soát. Hiệu ứng 'tà khí' của hắn nên có màu đen pha đỏ máu, đặc quánh và có tính ăn mòn, thể hiện bản chất hút sinh lực để tồn tại của hắn."
+      },
+      {
+        "name": "Lãnh Phong",
+        "role": "Phản diện phụ - Sát thủ của Trường Sinh Điện",
+        "age": "Khoảng 28-30 tuổi",
+        "look": "Thân hình săn chắc, góc cạnh của một người chuyên chiến đấu. Gương mặt lạnh lùng, ít biểu cảm với một vết sẹo mờ cắt ngang mày trái. Ánh mắt như chim săn mồi, sắc bén và vô hồn.",
+        "hair": "Đen, cắt ngắn kiểu under-cut gọn gàng, toát lên vẻ nguy hiểm và thực dụng.",
+        "outfit": "Trang phục hiện đại, ưu tiên tính cơ động và chiến đấu. Thường là áo khoác da đen, áo thun ôm sát body màu tối, quần jogger chiến thuật và bốt quân dụng. Có thể mang theo vũ khí ẩn.",
+        "color_theme": "Xám đậm, Đen, Đỏ máu (chi tiết nhỏ).",
+        "notes": "Chuyển động phải nhanh, dứt khoát và tàn nhẫn. Khi ra đòn, các chiêu thức tà thuật của y có thể tạo ra những luồng gió đen hoặc bóng ma lởn vởn, gây cảm giác chết chóc."
+      },
+      {
+        "name": "Hệ Thống Thần Y Tế Thế",
+        "role": "Hệ thống hỗ trợ nam chính",
+        "age": "N/A",
+        "look": "Không có hình dạng vật lý. Biểu hiện dưới dạng một giao diện đồ họa (UI) 3D holographic chỉ Lạc Trần thấy. Thiết kế kết hợp giữa công nghệ tương lai và mỹ thuật cổ điển: các bảng thông tin trong suốt, chữ viết phát sáng theo kiểu thư pháp, các biểu tượng là hình bát quái, âm dương, hoặc các loại thảo dược quý.",
+        "hair": "N/A",
+        "outfit": "N/A",
+        "color_theme": "Xanh lam công nghệ, Lục bảo, Vàng kim.",
+        "notes": "Âm thanh của hệ thống là giọng nói điện tử nhưng trầm ấm, rõ ràng, không cảm xúc. Khi Lạc Trần nhận 'Điểm Công Đức', sẽ có hiệu ứng những đốm sáng vàng kim tinh khiết bay từ bệnh nhân và hội tụ vào giao diện hệ thống."
+      },
+      {
+        "name": "Vương Béo (Vương Đại Phú)",
+        "role": "Nhân vật phụ - Bạn thân, 'cây ATM' của nam chính",
+        "age": "24 tuổi",
+        "look": "Thân hình hơi tròn trịa, phúc hậu. Gương mặt luôn tươi cười, đôi mắt híp lại khi cười, tạo cảm giác thân thiện và vô hại. Là một phú nhị đại nhưng không kiêu ngạo, rất trọng nghĩa khí.",
+        "hair": "Nâu hạt dẻ, được tạo kiểu thời thượng, bắt trend.",
+        "outfit": "Luôn mặc đồ hiệu từ đầu đến chân, màu sắc nổi bật, không ngại khoe sự giàu có của mình. Thích đeo đồng hồ hàng hiệu bản giới hạn và đi những đôi sneaker đắt tiền.",
+        "color_theme": "Vàng, Cam, Xanh dương hoàng gia.",
+        "notes": "Là nhân vật gây hài chính. Các biểu cảm cần được thể hiện một cách phóng đại: mắt sáng rực khi thấy tiền, há hốc mồm kinh ngạc khi thấy năng lực của Lạc Trần. Dù trông có vẻ ngốc nghếch nhưng lại rất nhanh nhạy trong kinh doanh và các mối quan hệ xã hội."
+      }
+    ]
   }
 }
