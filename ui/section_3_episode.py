@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import json
+import re
 import streamlit as st
 
-from core.data_models import Project, Episode
+from core.data_models import Project, Episode 
 from core.prompt_builders import build_episode_prompt
-from core.gemini_helpers import gemini_json
+from core.gemini_helpers import gemini_json 
+from core.gemini_image import  gemini25_image_generate
 from core.project_io import save_project
 from core.text_utils import (
-    clean_tts_text, extract_characters, _safe_name
+    clean_tts_text, extract_characters, _safe_name, capcut_sfx_name
 )
 from core.character_bible import ai_generate_character_bible, seed_from_text
 from core.veo31_helpers import build_veo31_segments_prompt
@@ -27,8 +29,8 @@ def _normalize_to_table(text: str) -> str:
     Chuẩn hoá nội dung về bảng Markdown 3 cột:
     | Content Type | Detailed Content | Technical Notes |
     |---|---|---|
-    """
-    import re
+    (tự chèn gợi ý CapCut + ĐẢM BẢO có 3 dòng FX:    SFX / BGM / Transition (nếu thiếu))
+    """ 
     if not text:
         return ""
     # Nếu đã có header đúng, giữ nguyên
@@ -64,9 +66,15 @@ def _normalize_to_table(text: str) -> str:
             ctype, content = "BGM", s.split(":", 1)[1].strip()
         elif low.startswith("transition:"):
             ctype, content = "Transition", s.split(":", 1)[1].strip()
+
+        # Escape '|' để không vỡ bảng
         content = content.replace("|", r"\|")
         notes = notes.replace("|", r"\|")
-        lines.append(f"| {ctype} | {content} | {notes} |")
+
+        # Gợi ý CapCut FX theo loại
+        capcut_hint = capcut_sfx_name(ctype)
+        note_full = (notes + " " + capcut_hint).strip() 
+        lines.append(f"| {ctype} | {content} | {note_full} |")
     return "\n".join(lines)
 
 
@@ -88,6 +96,118 @@ def _assets_list_from_json(data: dict) -> list:
     except Exception:
         pass
     return scenes
+
+
+# --------- Scene suggestion from Narration (auto-split) ---------
+
+def _parse_markdown_script_table(md: str):
+    """Trả về list hàng: [{'ctype','content','notes'}] từ bảng 3 cột."""
+    if not md:
+        return []
+    rows = []
+    for line in md.splitlines():
+        line = line.strip()
+        if not line.startswith("|") or "|---" in line:
+            continue
+        parts = [p.strip() for p in line.strip("|").split("|")]
+        if len(parts) < 3:
+            continue
+        c0, c1, c2 = parts[:3]
+        # bỏ header
+        header = c0.lower()
+        if "content type" in header:
+            continue
+        rows.append({"ctype": c0.strip(), "content": c1.strip(), "notes": c2.strip()})
+    return rows
+
+_VI_LOCATION_HINTS = [
+    r"\bTông\b", r"\bTộc\b", r"\bTông Môn\b", r"\bTông môn\b", r"\bMôn phái\b",
+    r"\bTrường\b", r"\bDiễn Võ Trường\b", r"\bSảnh\b", r"\bĐiện\b", r"\bThành\b",
+    r"\bSơn\b", r"\bCốc\b", r"\bCảnh\b", r"\bPhủ\b", r"\bTụ Luyện\b", r"\bLuyện Công\b",
+    r"\bDưới ánh trăng\b", r"\bÁnh trăng\b", r"\bĐêm\b", r"\bRừng\b", r"\bVách đá\b",
+]
+_VI_ACTION_HINTS = [
+    r"\bluyện\b", r"\bluyện kiếm\b", r"\bchém\b", r"\bvung\b", r"\bra\b",
+    r"\bxé gió\b", r"\bkiếm khí\b", r"\bgầm\b", r"\bnổ\b", r"\btạt\b",
+    r"\blướt\b", r"\bkhí tức\b", r"\bsát khí\b",
+]
+
+def _extract_names(text: str):
+    # gom cụm từ viết hoa liên tiếp (VD: 'Diệp Minh', 'Thái Hư Tông')
+    cand = re.findall(r"(?:[A-ZĐ][\wÀ-ỹ]+(?:\s+[A-ZĐ][\wÀ-ỹ]+)+)", text)
+    return list(dict.fromkeys([c.strip() for c in cand]))  # unique order
+
+def _match_any(patterns, text):
+    return any(re.search(p, text, flags=re.IGNORECASE) for p in patterns)
+
+def _expand_narration_to_scenes(n_text: str):
+    """Từ một câu Narration, đề xuất 2-3 scene: establishing / introduce char / action."""
+    scenes = []
+    text = (n_text or "").strip()
+    names = _extract_names(text)
+    has_location = _match_any(_VI_LOCATION_HINTS, text)
+    has_action = _match_any(_VI_ACTION_HINTS, text)
+
+    # 1) Establishing
+    if has_location or any(("Tông" in n or "Trường" in n or "Điện" in n or "Thành" in n or "Sơn" in n or "Cốc" in n or "Phủ" in n) for n in names):
+        place_name = None
+        for n in names:
+            if any(k in n for k in ["Tông", "Trường", "Điện", "Thành", "Sơn", "Cốc", "Phủ"]):
+                place_name = n
+                break
+        title = place_name or "Thiết lập bối cảnh"
+        img_prompt = f"Toàn cảnh {place_name or 'khu vực'} ban đêm; kiến trúc tu chân; sương mù mỏng; đèn lồng xa; ánh trăng lạnh; không khí huyền ảo."
+        scenes.append({
+            "scene": f"Establishing — {title}",
+            "image_prompt": img_prompt,
+            "sfx_prompt": "Wind Whoosh nhẹ, đêm tĩnh; tiếng côn trùng xa.",
+            "characters": []
+        })
+
+    # 2) Introduce character
+    char_name = None
+    for n in names:
+        if len(n.split()) == 2 and not any(k in n for k in ["Tông", "Trường", "Điện", "Thành", "Sơn", "Cốc", "Phủ"]):
+            char_name = n
+            break
+    if char_name:
+        img_prompt = f"{char_name} trong sân luyện; mồ hôi rịn; viền sáng ánh trăng; ánh mắt quyết liệt; medium/close shot; nền trường luyện mờ xa."
+        scenes.append({
+            "scene": f"Giới thiệu {char_name}",
+            "image_prompt": img_prompt,
+            "sfx_prompt": "Nhịp thở đều; vải khẽ động; bước chân xa.",
+            "characters": [char_name]
+        })
+
+    # 3) Action
+    if has_action:
+        action_hint = "vung kiếm mạnh, đường kiếm xé gió; kiếm khí lóe sáng rạch bóng đêm; motion blur nhẹ; bụi bay."
+        scenes.append({
+            "scene": "Luyện kiếm — hành động",
+            "image_prompt": action_hint,
+            "sfx_prompt": "Sword Whoosh, Cloth Rustle; nhịp gấp dần.",
+            "characters": [char_name] if char_name else []
+        })
+
+    if not scenes:
+        scenes.append({"scene": "Narration — minh hoạ", "image_prompt": text, "sfx_prompt": "", "characters": []})
+    return scenes
+
+def _suggest_scenes_from_script(ep: Episode):
+    """Đọc bảng 3 cột; mỗi Narration -> 2-3 scene đề xuất, không ghi đè."""
+    rows = _parse_markdown_script_table(ep.script_text or "")
+    suggestions = []
+    for r in rows:
+        if r["ctype"].lower().startswith("narration"):
+            suggestions.extend(_expand_narration_to_scenes(r["content"]))
+    uniq = []
+    seen = set()
+    for sc in suggestions:
+        key = (sc["scene"], sc["image_prompt"])
+        if key not in seen:
+            seen.add(key)
+            uniq.append(sc)
+    return uniq
 
 
 def _render_character_bible_block(model, proj: Project, ep: Episode, sidx: int, ep_idx: int):
@@ -145,15 +265,12 @@ def _render_character_bible_block(model, proj: Project, ep: Episode, sidx: int, 
             c["notes"] = st.text_area("Notes", value=c.get("notes",""), key=f"cb_notes_{sidx}_{ep_idx}_{i}")
             chars[i-1] = c
     proj.character_bible["characters"] = chars
-
+# --------- Veo3 helpers ---------
 
 def _gen_veo_for_scene(model, proj: Project, ep: Episode, sc: dict, max_segments: int = 3) -> dict:
     """
     Gọi Gemini để sinh segments cho Veo 3.1 từ scene.
-    Trả về scene đã được gắn:
-      - "veo_prompt": prompt đã dùng
-      - "veo31_segments": list segments (JSON) nếu sinh thành công
-      - nếu không đúng schema thì gắn "veo_raw_response" để dev kiểm tra
+    Trả về scene đã gắn: veo_prompt, veo31_segments (hoặc veo_raw_response nếu schema sai).
     """
     sc_name = sc.get("scene", "Cảnh")
     scene_text = sc.get("image_prompt", "") or sc.get("sfx_prompt", "") or ep.summary
@@ -186,6 +303,66 @@ def _gen_veo_for_scene(model, proj: Project, ep: Episode, sc: dict, max_segments
     return sc
 
 
+# ====== build image prompts per scene (anchor frames) ======
+
+def _styleize_image_prompt(base: str, aspect_ratio: str, donghua_style: bool, characters: list, character_bible: dict) -> str:
+    """Hợp nhất image_prompt + style + nhân vật để render frame/ảnh neo (anchor) cho đồng bộ video."""
+    base = (base or "").strip()
+    char_descriptors = []
+    if character_bible and character_bible.get("characters"):
+        by_name = {c.get("name"): c for c in character_bible["characters"] if c.get("name")}
+        for n in characters or []:
+            c = by_name.get(n)
+            if not c:
+                continue
+            piece = f"{c.get('name')}: {c.get('look','')}; hair {c.get('hair','')}; outfit {c.get('outfit','')}; colors {c.get('color_theme','')}"
+            char_descriptors.append(piece)
+
+    style = (
+        "cel-shaded, clean lineart, Chinese donghua stylization, Asian facial features, "
+        "natural black/dark hair unless specified, soft skin rendering, rich fabric texture, "
+        "avoid photorealism, avoid western/European facial structure"
+        if donghua_style else
+        "cinematic stylized look, avoid hyper-realistic faces"
+    )
+    neg = "low quality, blurry, extra fingers, deformed hands, photorealistic, western/European facial structure"
+
+    ar = aspect_ratio or "16:9"
+    char_block = (" | ".join(char_descriptors)).strip()
+    if char_block:
+        char_block = f"Characters: {char_block}. "
+
+    return (
+        f"{char_block}{base}. "
+        f"Style: {style}. "
+        f"Shot: keyframe still for video sync; aspect ratio {ar}; 24fps context. "
+        f"Negative: {neg}."
+    )
+
+def _compose_scene_image_prompts(proj: Project, ep: Episode):
+    """Trả về (text_block, json_list) các prompt ảnh theo cảnh."""
+    scenes = (ep.assets or {}).get("scenes", []) or []
+    out_lines, out_json = [], []
+    for i, sc in enumerate(scenes, 1):
+        name = sc.get("scene", f"Cảnh {i}")
+        base_imgp = sc.get("image_prompt") or sc.get("sfx_prompt") or ep.summary
+        chars = sc.get("characters", [])
+        full_imgp = _styleize_image_prompt(
+            base=base_imgp,
+            aspect_ratio=proj.aspect_ratio,
+            donghua_style=proj.donghua_style,
+            characters=chars,
+            character_bible=proj.character_bible or {}
+        )
+        out_lines.append(
+            f"## Scene {i}: {name}\n"
+            f"- Characters: {', '.join(chars) if chars else '(none)'}\n"
+            f"- Image Prompt:\n{full_imgp}\n"
+        )
+        out_json.append({"index": i, "scene": name, "characters": chars, "image_prompt": full_imgp})
+    return ("\n".join(out_lines)).strip(), out_json
+
+
 # ===================== Main UI =====================
 
 def render_section_3(model, use_tts: bool):
@@ -215,18 +392,9 @@ def render_section_3(model, use_tts: bool):
     # ===== Sinh FULL/ASSETS/TTS =====
     col1, col2 = st.columns(2)
     with col1:
-        if st.button(
-            "✍️ Sinh nội dung tập (FULL/ASSETS/TTS)",
-            disabled=not bool(model),
-            key=f"write_ep_s{sidx}_{ep_idx}"
-        ):
+        if st.button("✍️ Sinh nội dung tập (FULL/ASSETS/TTS)", disabled=not bool(model), key=f"write_ep_s{sidx}_{ep_idx}"):
             with st.spinner("Đang sinh kịch bản tập..."):
-                prompt = build_episode_prompt(
-                    proj.chosen_storyline,
-                    ep.title,
-                    ep.summary,
-                    preset_name=proj.preset
-                )
+                prompt = build_episode_prompt(proj.chosen_storyline, ep.title, ep.summary, preset_name=proj.preset)
                 data = gemini_json(model, prompt)
 
             if isinstance(data, dict):
@@ -234,14 +402,12 @@ def render_section_3(model, use_tts: bool):
                 assets_list = _assets_list_from_json(data)
                 tts_text = data.get("TTS") or data.get("tts") or ""
 
-                # Chuẩn hoá bảng 3 cột
                 full_script = _normalize_to_table(full_script)
-
                 ep.script_text = full_script
-                ep.assets = {"scenes": assets_list}  # luôn là dict
+                ep.assets = {"scenes": assets_list}
                 ep.tts_text = clean_tts_text(tts_text)
 
-                # Seed tên nhân vật để dày Character Bible
+                # Seed nhân vật vào Character Bible
                 try:
                     char_from_script = extract_characters(ep.script_text)
                     char_from_tts = extract_characters(ep.tts_text or "")
@@ -274,7 +440,7 @@ def render_section_3(model, use_tts: bool):
             st.success("Đã lưu.")
 
     # ===== Tabs =====
-    tabs = st.tabs(["📖 Truyện", "🖼️🎚️ Prompts Ảnh & Âm Thanh", "🗣️ TTS & MP3", "📚 Character Bible"])
+    tabs = st.tabs(["📖 Truyện", "🖼️🎚️ Prompts & Veo 3.1", "🗣️ TTS & MP3", "📚 Character Bible"])
 
     # ---- Tab 1: Script
     with tabs[0]:
@@ -292,8 +458,12 @@ def render_section_3(model, use_tts: bool):
             st.session_state.project.seasons[sidx].episodes[ep_idx] = ep
             save_project(st.session_state.project)
             st.success("Đã chuẩn hoá bảng 3 cột.")
-
-    # ---- Tab 2: Assets + Veo 3.1
+        if st.button("➕ Bơm nhanh SFX/BGM/Transition vào bảng"):
+            ep.script_text = _normalize_to_table(ep.script_text or "")
+            st.session_state.project.seasons[sidx].episodes[ep_idx] = ep
+            save_project(st.session_state.project)
+            st.success("Đã kiểm tra và chèn SFX/BGM/Transition (nếu thiếu).")
+    # ---- Tab 2: Assets + Veo 3.1 + Image Prompts + Scene Suggestion
     with tabs[1]:
         scenes = (ep.assets or {}).get("scenes", [])
         st.subheader("Cảnh / Prompts")
@@ -303,23 +473,10 @@ def render_section_3(model, use_tts: bool):
         # Chỉnh từng scene
         for i, sc in enumerate(scenes, 1):
             with st.expander(f"Cảnh {i}: {sc.get('scene','(chưa có tên)')}"):
-                scene_name = st.text_input(
-                    f"Tên cảnh {i}", value=sc.get("scene", f"Cảnh {i}"),
-                    key=f"scene_name_{sidx}_{ep.index}_{i}"
-                )
-                imgp = st.text_area(
-                    f"Image Prompt {i}", value=sc.get("image_prompt", ""),
-                    key=f"imgp_{sidx}_{ep.index}_{i}"
-                )
-                sfxp = st.text_area(
-                    f"SFX Prompt {i}", value=sc.get("sfx_prompt", ""),
-                    key=f"sfxp_{sidx}_{ep.index}_{i}"
-                )
-                chars = st.text_input(
-                    f"Nhân vật xuất hiện {i} (phân tách bởi dấu phẩy)",
-                    value=", ".join(sc.get("characters", []) or []),
-                    key=f"chars_{sidx}_{ep.index}_{i}"
-                )
+                scene_name = st.text_input(f"Tên cảnh {i}", value=sc.get("scene", f"Cảnh {i}"), key=f"scene_name_{sidx}_{ep.index}_{i}")
+                imgp = st.text_area(f"Image Prompt {i}", value=sc.get("image_prompt", ""), key=f"imgp_{sidx}_{ep.index}_{i}")
+                sfxp = st.text_area(f"SFX Prompt {i}", value=sc.get("sfx_prompt", ""), key=f"sfxp_{sidx}_{ep.index}_{i}")
+                chars = st.text_input(f"Nhân vật xuất hiện {i} (phân tách bởi dấu phẩy)", value=", ".join(sc.get("characters", []) or []), key=f"chars_{sidx}_{ep.index}_{i}")
                 sc["scene"] = scene_name
                 sc["image_prompt"] = imgp
                 sc["sfx_prompt"] = sfxp
@@ -332,33 +489,128 @@ def render_section_3(model, use_tts: bool):
             save_project(st.session_state.project)
             st.success("Đã lưu Scenes.")
 
+        # ====== Gợi ý SCENES từ Narration (tự phân rã 1 Narration -> 2~3 cảnh)
+        st.markdown("—")
+        st.subheader("🧩 Gợi ý SCENES từ Narration")
+        colS1, colS2 = st.columns([1, 1])
+        with colS1:
+            if st.button("➕ Đề xuất cảnh từ Narration (không ghi đè)"):
+                suggested = _suggest_scenes_from_script(ep)
+                if not suggested:
+                    st.info("Không tìm thấy Narration phù hợp để tách cảnh.")
+                else:
+                    st.session_state["__scene_suggest_preview__"] = suggested
+                    st.success(f"Đã đề xuất {len(suggested)} cảnh. Kiểm tra Preview bên phải.")
+        with colS2:
+            if st.button("✅ Thêm các cảnh đề xuất vào Scenes hiện tại"):
+                suggested = st.session_state.get("__scene_suggest_preview__", [])
+                if not suggested:
+                    st.info("Chưa có danh sách đề xuất. Bấm nút đề xuất trước.")
+                else:
+                    merged = scenes[:]  # copy
+                    existing_names = {sc.get("scene","") for sc in merged}
+                    for sc in suggested:
+                        name = sc.get("scene","")
+                        if name in existing_names:
+                            k = 2
+                            new_name = f"{name} #{k}"
+                            while new_name in existing_names:
+                                k += 1
+                                new_name = f"{name} #{k}"
+                            sc["scene"] = new_name
+                        existing_names.add(sc["scene"])
+                        merged.append(sc)
+                    ep.assets = {"scenes": merged}
+                    st.session_state.project.seasons[sidx].episodes[ep_idx] = ep
+                    save_project(st.session_state.project)
+                    st.success(f"Đã thêm {len(suggested)} cảnh vào Scenes.")
+
+        with st.expander("👀 Xem trước cảnh đề xuất từ Narration"):
+            preview = st.session_state.get("__scene_suggest_preview__", [])
+            if preview:
+                for i, sc in enumerate(preview, 1):
+                    st.markdown(f"**{i}. {sc.get('scene','(no name)')}**")
+                    st.write(f"- Image: {sc.get('image_prompt','')}")
+                    st.write(f"- SFX: {sc.get('sfx_prompt','')}")
+                    st.write(f"- Characters: {', '.join(sc.get('characters', [])) or '(none)'}")
+            else:
+                st.caption("Chưa có đề xuất. Bấm nút ở trên để tạo.")
+
+        # ===== NEW: Xuất prompt Ảnh theo cảnh (anchor frames)
+        st.markdown("----")
+        st.subheader("📸 Xuất prompt Ảnh theo Cảnh (anchor frames)")
+        txt_block, json_block = _compose_scene_image_prompts(proj, ep)
+        colP1, colP2 = st.columns(2)
+        with colP1:
+            st.caption("Shotlist & Image Prompts (Text)")
+            st.code(txt_block or "Chưa có cảnh.", language="markdown")
+        with colP2:
+            st.caption("Shotlist & Image Prompts (JSON)")
+            st.json(json_block or [])
+        
+        st.markdown("----")
+        st.subheader("🧠 Tạo hình ảnh từng cảnh (Gemini 2.5)")
+
+        colI1, colI2 = st.columns([1, 1])
+        with colI1:
+            img_model = st.selectbox(
+                "Model ảnh",
+                options=["gemini-2.5-flash-image"],
+                index=0,
+                help="Gemini 2.5 Flash Image (Nano Banana)."
+            )
+        with colI2:
+            img_size = st.selectbox("Kích thước gợi ý", ["1024x576", "1280x720", "1024x1024", "720x1280"], index=0)
+
+        if st.button("🪄 Tạo ảnh cho toàn bộ cảnh (Gemini 2.5)"):
+            txt_block, json_block = _compose_scene_image_prompts(proj, ep)
+            images = []
+            for sc in json_block:
+                with st.spinner(f"Đang tạo ảnh: {sc['scene']} …"):
+                    img, msg = gemini25_image_generate(sc["image_prompt"], model_name=img_model, size_hint=img_size)
+                    if img is not None:
+                        st.image(img, caption=sc["scene"], use_column_width=True)
+                        images.append({"scene": sc["scene"], "image": img})
+                    else:
+                        st.warning(f"{sc['scene']}: {msg}")
+            st.session_state["__gemini_images__"] = images
+            if images:
+                st.success(f"Đã tạo {len(images)} ảnh bằng {img_model}.")
+
+
+
         # ===== Veo 3.1 (tạo segments) — dùng form + state để tránh "ẩn mất"
         st.markdown("---")
         st.subheader("🎬 Veo 3.1 (tạo segments)")
 
         # Khóa session theo mùa/tập để giữ state sau rerun
         veo_key_base = f"veo_{sidx}_{ep.index}"
+        current_scenes = scenes or []
         if f"{veo_key_base}_scenes" not in st.session_state:
-            st.session_state[f"{veo_key_base}_scenes"] = scenes or []
+            st.session_state[f"{veo_key_base}_scenes"] = current_scenes
+        else:
+            if len(st.session_state[f"{veo_key_base}_scenes"]) != len(current_scenes):
+                st.session_state[f"{veo_key_base}_scenes"] = current_scenes
+
         if f"{veo_key_base}_last_error" not in st.session_state:
             st.session_state[f"{veo_key_base}_last_error"] = None
         if f"{veo_key_base}_busy" not in st.session_state:
             st.session_state[f"{veo_key_base}_busy"] = False
 
         ss_scenes = st.session_state[f"{veo_key_base}_scenes"]
+        n_scenes = len(ss_scenes)
 
         # Dùng FORM để tránh rerun giữa chừng
         with st.form(key=f"{veo_key_base}_form_all"):
             colV1, colV2 = st.columns([1, 1])
             with colV1:
-                run_all = st.form_submit_button("⚡ Sinh Veo 3.1 cho TẤT CẢ cảnh", disabled=not bool(model))
+                run_all = st.form_submit_button("⚡ Sinh Veo 3.1 cho TẤT CẢ cảnh", disabled=(not bool(model) or n_scenes == 0))
             with colV2:
-                pick = st.number_input(
-                    "Sinh riêng cảnh số",
-                    min_value=1, max_value=max(1, len(ss_scenes)) if ss_scenes else 1,
-                    value=1, step=1, key=f"{veo_key_base}_pick"
-                )
-                run_one = st.form_submit_button("▶️ Sinh Veo cho cảnh đã chọn", disabled=not bool(model))
+                pick_min = 1
+                pick_max = n_scenes if n_scenes > 0 else 1
+                _disabled_one = (not bool(model) or n_scenes == 0)
+                pick = st.number_input("Sinh riêng cảnh số", min_value=pick_min, max_value=pick_max, value=pick_min, step=1, key=f"{veo_key_base}_pick", disabled=_disabled_one)
+                run_one = st.form_submit_button("▶️ Sinh Veo cho cảnh đã chọn", disabled=_disabled_one)
 
             if run_all or run_one:
                 st.session_state[f"{veo_key_base}_busy"] = True
@@ -367,12 +619,15 @@ def render_section_3(model, use_tts: bool):
                     with st.spinner("Đang sinh Veo 3.1..."):
                         if run_all:
                             new_scenes = []
-                            for i, sc in enumerate(ss_scenes, 1):
+                            for idx_scene, sc in enumerate(ss_scenes, 1):
                                 new_scenes.append(_gen_veo_for_scene(model, proj, ep, sc, max_segments=3))
                             ss_scenes = new_scenes
                         else:
-                            i = int(pick) - 1
-                            ss_scenes[i] = _gen_veo_for_scene(model, proj, ep, ss_scenes[i], max_segments=3)
+                            if n_scenes == 0:
+                                st.warning("Chưa có scene để sinh Veo.")
+                            else:
+                                idx = max(0, min(int(pick) - 1, n_scenes - 1))
+                                ss_scenes[idx] = _gen_veo_for_scene(model, proj, ep, ss_scenes[idx], max_segments=3)
 
                         # Cập nhật vào session_state TRƯỚC
                         st.session_state[f"{veo_key_base}_scenes"] = ss_scenes
@@ -413,10 +668,7 @@ def render_section_3(model, use_tts: bool):
     # ---- Tab 3: TTS
     with tabs[2]:
         st.subheader("TTS Text")
-        ep.tts_text = st.text_area(
-            "Bản TTS (có thể chỉnh tay trước khi render giọng)",
-            value=ep.tts_text or "", height=300, key=f"tts_{sidx}_{ep_idx}"
-        )
+        ep.tts_text = st.text_area("Bản TTS (có thể chỉnh tay trước khi render giọng)", value=ep.tts_text or "", height=300, key=f"tts_{sidx}_{ep_idx}")
         if HAS_GTTS and use_tts:
             st.caption("gTTS khả dụng. (Tạo MP3 nên chạy cục bộ để tránh giới hạn thời gian).")
         else:

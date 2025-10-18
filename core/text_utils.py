@@ -8,6 +8,32 @@ def _fold(s: str) -> str:
 def _safe_name(s: str) -> str:
     s = re.sub(r"[^\w\- ]+", "", s, flags=re.U)
     return s.strip().replace(" ", "_")[:60]
+# ===================== CapCut FX name suggestion =====================
+
+def capcut_sfx_name(effect_type: str) -> str:
+    """
+    Gợi ý FX theo loại nội dung (sound effects / bgm / transition).
+    """
+    effect_type = (effect_type or "").lower()
+    sfx_map = {
+        "sound effects": [
+            "Door Open", "Footsteps", "Sword Clash", "Explosion", "Wind Whoosh",
+            "Rain Light", "Bird Chirp", "Magic Spark", "Crowd Murmur", "Fire Crackle", "Monster Growl"
+        ],
+        "bgm": [
+            "Epic Battle", "Dark Ambient", "Calm Piano", "Suspense Pulse",
+            "Cinematic Rise", "Emotional Strings", "Lo-Fi Chill", "Mystery Drone"
+        ],
+        "transition": [
+            "Whoosh Short", "Flash Transition", "Riser Hit", "Cinematic Drop", "Wind Sweep", "Page Turn"
+        ],
+    }
+
+    for key, vals in sfx_map.items():
+        if key in effect_type:  # ✅ chú ý: phải là "in", không == !
+            return f"CapCut FX: {', '.join(vals[:5])} …"
+    return ""
+
 
 def clean_tts_text(text: str) -> str:
     if not text: return ""
