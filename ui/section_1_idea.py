@@ -34,12 +34,16 @@ def parse_storyline_blocks(raw_text: str):
             blocks.append({"title": title, "summary": body})
     return blocks[:5]
 
-def render_section_1(model, preset_label: str):
+from core.presets import PRESETS
+
+def render_section_1(model):
     st.header("1) Nhập Ý Tưởng & Tạo 5 phương án")
 
     proj = st.session_state.project
     proj_name = st.text_input("Tên dự án", value=(proj.name if proj else "Truyen_XK_NT_HT"))
-    preset_name = st.selectbox("Preset", [preset_label])
+    preset_name = st.selectbox("Preset", list(PRESETS.keys()))
+    if "project" in st.session_state and st.session_state.project:
+            st.session_state.project.preset = preset_name
 
     idea_default = proj.idea if proj else ""
     idea = st.text_area("Ý tưởng khởi nguồn", height=120, value=idea_default,

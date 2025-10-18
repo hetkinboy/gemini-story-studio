@@ -1,207 +1,218 @@
+# -*- coding: utf-8 -*-
 import json
 import streamlit as st
+
 from core.data_models import Project, Episode
 from core.prompt_builders import build_episode_prompt
 from core.gemini_helpers import gemini_json
 from core.project_io import save_project
 from core.text_utils import (
-    clean_tts_text, parse_tts_lines, extract_characters,
-    suggest_styles, _safe_name
+    clean_tts_text, extract_characters, _safe_name
 )
 from core.character_bible import ai_generate_character_bible, seed_from_text
 from core.veo31_helpers import build_veo31_segments_prompt
 
 # --- Optional TTS deps ---
 try:
-    from gtts import gTTS
+    from gtts import gTTS  # noqa: F401
+    HAS_GTTS = True
 except Exception:
-    gTTS = None
-
-try:
-    from pydub import AudioSegment
-except Exception:
-    AudioSegment = None
+    HAS_GTTS = False
 
 
-def _sanitize_multiselect_options(options, default_list):
+# ===================== Helpers =====================
+
+def _normalize_to_table(text: str) -> str:
     """
-    Đảm bảo giá trị default ⊆ options để tránh StreamlitAPIException.
-    Nếu default có phần tử chưa nằm trong options => gộp rồi đưa default lên đầu.
+    Chuẩn hoá nội dung về bảng Markdown 3 cột:
+    | Content Type | Detailed Content | Technical Notes |
+    |---|---|---|
     """
-    options = list(options or [])
-    default_list = list(default_list or [])
-    base_set = set([x for x in options if x])
-    extra = [x for x in default_list if x and x not in base_set]
-    merged = options + extra
-    seen, merged_unique = set(), []
-    for x in merged:
-        if x and x not in seen:
-            merged_unique.append(x)
-            seen.add(x)
-    default_sanitized = [x for x in default_list if x in merged_unique]
-    rest = [x for x in merged_unique if x not in default_sanitized]
-    rest_sorted = sorted(rest, key=lambda s: s.lower())
-    options_sanitized = default_sanitized + rest_sorted
-    return options_sanitized, default_sanitized
+    import re
+    if not text:
+        return ""
+    # Nếu đã có header đúng, giữ nguyên
+    if re.search(
+        r'^\|\s*Content Type\s*\|\s*Detailed Content\s*\|\s*Technical Notes\s*\|\s*$',
+        text, flags=re.I | re.M
+    ):
+        return text
+
+    lines = [
+        "| Content Type | Detailed Content | Technical Notes |",
+        "|---|---|---|",
+    ]
+    for raw in text.splitlines():
+        s = raw.strip()
+        if not s:
+            continue
+        ctype, content, notes = "Narration", s, ""
+        low = s.lower()
+        if low.startswith("narration:"):
+            ctype, content = "Narration", s.split(":", 1)[1].strip()
+        elif low.startswith("dialogue:") or low.startswith("dialog:"):
+            ctype, content = "Dialogue", s.split(":", 1)[1].strip()
+        elif low.startswith("voice system:") or low.startswith("system:"):
+            ctype, content = "Voice System", s.split(":", 1)[1].strip()
+        elif low.startswith("sfx:") or s.startswith("[SFX]"):
+            ctype = "Sound Effects"
+            if s.startswith("[SFX]") and "]" in s:
+                content = s.split("]", 1)[1].strip()
+            else:
+                content = s.split(":", 1)[1].strip()
+        elif low.startswith("bgm:"):
+            ctype, content = "BGM", s.split(":", 1)[1].strip()
+        elif low.startswith("transition:"):
+            ctype, content = "Transition", s.split(":", 1)[1].strip()
+        content = content.replace("|", r"\|")
+        notes = notes.replace("|", r"\|")
+        lines.append(f"| {ctype} | {content} | {notes} |")
+    return "\n".join(lines)
 
 
-# -------- Character Bible UI helpers (STATE + quick view) --------
-def _ensure_cb_state(proj):
+def _assets_list_from_json(data: dict) -> list:
     """
-    Giữ một bản text JSON trong session để text_area luôn hiển thị đúng
-    khi vừa seed/generate và chúng ta chủ động rerun.
+    Lấy list scene từ JSON trả về của model (FULL/ASSETS/TTS).
     """
-    if "cb_text_value" not in st.session_state:
-        st.session_state.cb_text_value = json.dumps(
-            proj.character_bible, ensure_ascii=False, indent=2
-        )
+    scenes = []
+    try:
+        raw = data.get("ASSETS") or data.get("assets") or []
+        if isinstance(raw, list):
+            for it in raw:
+                scenes.append({
+                    "scene": (it.get("scene") or "").strip(),
+                    "image_prompt": (it.get("image_prompt") or "").strip(),
+                    "sfx_prompt": (it.get("sfx_prompt") or "").strip(),
+                    "characters": it.get("characters", []),
+                })
+    except Exception:
+        pass
+    return scenes
 
 
-def _render_cb_table(cb: dict):
+def _render_character_bible_block(model, proj: Project, ep: Episode, sidx: int, ep_idx: int):
     """
-    Hiển thị nhanh danh sách nhân vật để người dùng thấy "đã tạo/seed" ngay.
+    Khối UI Character Bible: tạo bằng AI, seed từ FULL_SCRIPT/TTS, chỉnh nhanh & lưu.
     """
+    st.subheader("📚 Character Bible")
+    colA, colB, colC = st.columns([1, 1, 1])
+
+    with colA:
+        if st.button("🪄 Tạo Character Bible (AI)", key=f"cb_ai_{sidx}_{ep_idx}", disabled=not bool(model)):
+            with st.spinner("Đang tạo Character Bible..."):
+                cb = ai_generate_character_bible(
+                    model,
+                    project_name=proj.name,
+                    idea=proj.idea,
+                    chosen_storyline=proj.chosen_storyline,
+                    outline=proj.seasons[sidx].outline,
+                    max_chars=8
+                )
+                if cb and isinstance(cb, dict):
+                    proj.character_bible = cb
+                    save_project(proj)
+                    st.success("Đã tạo Character Bible.")
+
+    with colB:
+        if st.button("✨ Seed từ FULL_SCRIPT/TTS", key=f"cb_seed_{sidx}_{ep_idx}"):
+            base_cb = proj.character_bible or {"characters": []}
+            merged = seed_from_text(base_cb, (ep.script_text or "") + "\n" + (ep.tts_text or ""))
+            proj.character_bible = merged
+            save_project(proj)
+            st.success("Đã seed thêm tên nhân vật từ script/TTS.")
+
+    with colC:
+        if st.button("💾 Lưu Character Bible", key=f"cb_save_{sidx}_{ep_idx}"):
+            save_project(proj)
+            st.success("Đã lưu Character Bible.")
+
+    # Bảng chỉnh nhanh
+    cb = proj.character_bible or {"characters": []}
     chars = cb.get("characters", [])
     if not chars:
-        st.info("Character Bible hiện chưa có nhân vật.")
+        st.info("Chưa có nhân vật. Hãy dùng hai nút ở trên để tạo/seed.")
         return
-    st.write(f"Đã có **{len(chars)}** nhân vật:")
+
     for i, c in enumerate(chars, 1):
-        name = c.get("name", "?")
-        role = c.get("role", "")
-        age = c.get("age", "")
-        look = c.get("look", "")
-        st.markdown(f"- **{i}. {name}** — {role}, {age}. *{(look or '')[:120]}*")
+        with st.expander(f"{i}. {c.get('name','(chưa đặt tên)')}"):
+            c["name"] = st.text_input("Name", value=c.get("name",""), key=f"cb_name_{sidx}_{ep_idx}_{i}")
+            c["role"] = st.text_input("Role", value=c.get("role",""), key=f"cb_role_{sidx}_{ep_idx}_{i}")
+            c["age"] = st.text_input("Age", value=c.get("age",""), key=f"cb_age_{sidx}_{ep_idx}_{i}")
+            c["look"] = st.text_area("Look (ưu tiên nét Á Đông)", value=c.get("look",""), key=f"cb_look_{sidx}_{ep_idx}_{i}")
+            c["hair"] = st.text_input("Hair", value=c.get("hair",""), key=f"cb_hair_{sidx}_{ep_idx}_{i}")
+            c["outfit"] = st.text_input("Outfit", value=c.get("outfit",""), key=f"cb_outfit_{sidx}_{ep_idx}_{i}")
+            c["color_theme"] = st.text_input("Color Theme", value=c.get("color_theme",""), key=f"cb_color_{sidx}_{ep_idx}_{i}")
+            c["notes"] = st.text_area("Notes", value=c.get("notes",""), key=f"cb_notes_{sidx}_{ep_idx}_{i}")
+            chars[i-1] = c
+    proj.character_bible["characters"] = chars
 
 
-# ------------------ Main Section 3 ------------------
-def render_section_3(model, use_tts: bool):
-    st.header("3) Viết nội dung cho từng tập — theo Mùa đang chọn")
+def _gen_veo_for_scene(model, proj: Project, ep: Episode, sc: dict, max_segments: int = 3) -> dict:
+    """
+    Gọi Gemini để sinh segments cho Veo 3.1 từ scene.
+    Trả về scene đã được gắn:
+      - "veo_prompt": prompt đã dùng
+      - "veo31_segments": list segments (JSON) nếu sinh thành công
+      - nếu không đúng schema thì gắn "veo_raw_response" để dev kiểm tra
+    """
+    sc_name = sc.get("scene", "Cảnh")
+    scene_text = sc.get("image_prompt", "") or sc.get("sfx_prompt", "") or ep.summary
+    char_in_scene = sc.get("characters", [])
 
-    proj: Project | None = st.session_state.project
-    if not proj or not proj.seasons:
-        st.info("Chưa có Mùa/Outline. Vào bước 2 trước nhé.")
-        return
-
-    sidx = st.session_state.current_season_idx
-    cur_season = proj.seasons[sidx]
-    if not cur_season.outline:
-        st.info("Mùa hiện tại chưa có dàn bài. Hãy tạo ở bước 2.")
-        return
-
-    # Warn nếu thiếu model
-    if model is None:
-        st.warning("⚠️ Chưa khởi tạo model (kiểm tra GEMINI_API_KEY ở Sidebar). Một số nút AI sẽ bị vô hiệu.")
-
-    # Bảo đảm có state cho CB JSON text
-    _ensure_cb_state(proj)
-
-    # ==== VE0 & Character Bible options (đặt trước) ====
-    with st.expander("📌 Tuỳ chọn nâng cao (Veo & Nhân vật)"):
-        colx, coly = st.columns(2)
-        with colx:
-            proj.aspect_ratio = st.selectbox(
-                "Tỉ lệ khung hình mặc định (Veo)", ["16:9", "9:16"],
-                index=(0 if proj.aspect_ratio == "16:9" else 1)
-            )
-        with coly:
-            proj.donghua_style = st.toggle(
-                "Ưu tiên phong cách hoạt hình Trung Quốc (donghua)",
-                value=proj.donghua_style
-            )
-
-        # Character Bible JSON – dùng session_state.cb_text_value
-        st.caption("**Character Bible** — mô tả nhân vật (JSON).")
-        cb_text = st.text_area(
-            "Character Bible (JSON)",
-            height=220,
-            value=st.session_state.cb_text_value,
-            key="cb_text_area"
-        )
-        try:
-            cb_parsed = json.loads(cb_text) if cb_text.strip() else {"characters": []}
-            if "characters" not in cb_parsed:
-                cb_parsed = {"characters": []}
-        except Exception:
-            cb_parsed = proj.character_bible
-            st.warning("JSON Character Bible không hợp lệ. Giữ giá trị cũ.")
-
-        # 3 nút: Generate / Seed / Save
-        col_cb1, col_cb2, col_cb3 = st.columns(3)
-        with col_cb1:
-            if st.button("🪄 Tạo Character Bible (AI)"):
-                if not model:
-                    st.warning("Chưa khởi tạo model.")
-                else:
-                    some_outline = cur_season.outline if cur_season.outline else None
-                    data_cb = ai_generate_character_bible(
-                        model, proj.name, proj.idea, proj.chosen_storyline, some_outline, 6
-                    )
-                    if isinstance(data_cb, dict) and data_cb.get("characters"):
-                        proj.character_bible = data_cb
-                        # Sync state & rerun để thấy ngay trong text_area
-                        st.session_state.cb_text_value = json.dumps(
-                            data_cb, ensure_ascii=False, indent=2
-                        )
-                        save_project(proj)
-                        st.success(f"Đã tạo Character Bible ({len(data_cb['characters'])} nhân vật).")
-                        st.rerun()
-                    else:
-                        st.error("Model không trả JSON hợp lệ.")
-
-        with col_cb2:
-            if st.button("✨ Seed nhân vật từ TTS/Script (tập đang chọn)"):
-                # Cố lấy index từ selectbox (ở dưới). Nếu chưa có, fallback = 0.
-                ep_select_key = f"ep_select_s{sidx}"
-                def_ep_idx = 0
-                if st.session_state.get(ep_select_key):
-                    try:
-                        def_ep_idx = int(str(st.session_state.get(ep_select_key)).split()[1]) - 1
-                    except Exception:
-                        def_ep_idx = 0
-
-                if not cur_season.episodes:
-                    st.warning("Chưa có tập nào để seed.")
-                else:
-                    ep_for_seed = cur_season.episodes[max(0, min(def_ep_idx, len(cur_season.episodes) - 1))]
-                    seed_text = ep_for_seed.tts_text or ep_for_seed.script_text
-                    if not (seed_text or "").strip():
-                        st.warning("Tập hiện tại chưa có TTS/Script để seed.")
-                    else:
-                        new_cb = seed_from_text(cb_parsed, seed_text)
-                        proj.character_bible = new_cb
-                        # Sync state & rerun
-                        st.session_state.cb_text_value = json.dumps(
-                            new_cb, ensure_ascii=False, indent=2
-                        )
-                        save_project(proj)
-                        st.success("Đã seed tên nhân vật từ TTS/Script.")
-                        st.rerun()
-
-        with col_cb3:
-            if st.button("💾 Lưu Character Bible"):
-                proj.character_bible = cb_parsed
-                st.session_state.cb_text_value = json.dumps(
-                    cb_parsed, ensure_ascii=False, indent=2
-                )
-                save_project(proj)
-                st.success("Đã lưu Character Bible.")
-
-        # Bảng tóm tắt nhân vật ngay dưới các nút
-        _render_cb_table(proj.character_bible)
-
-        # Cập nhật lại vào session
-        st.session_state.project = proj
-
-    # ==== Chọn tập ====
-    ep_indices = [f"Tập {ep.index:02d}" for ep in cur_season.episodes]
-    ep_label = st.selectbox(
-        "Chọn tập để viết / chỉnh sửa", ep_indices, key=f"ep_select_s{sidx}"
+    veo_prompt = build_veo31_segments_prompt(
+        ep_title=ep.title,
+        scene_name=sc_name,
+        scene_text=scene_text,
+        max_segments=max_segments,
+        aspect_ratio=proj.aspect_ratio,
+        donghua_style=proj.donghua_style,
+        character_bible=proj.character_bible,
+        characters_in_scene=char_in_scene
     )
+    sc["veo_prompt"] = veo_prompt
+
+    # Gọi model và bắt lỗi rõ ràng
+    try:
+        data = gemini_json(model, veo_prompt)
+        if isinstance(data, dict) and isinstance(data.get("segments"), list):
+            sc["veo31_segments"] = data["segments"]
+        else:
+            sc["veo31_segments"] = []
+            sc["veo_raw_response"] = data
+    except Exception as e:
+        sc["veo31_segments"] = []
+        sc["veo_error"] = str(e)
+        raise
+    return sc
+
+
+# ===================== Main UI =====================
+
+def render_section_3(model, use_tts: bool):
+    st.header("✍️ Viết tập & Hậu kỳ")
+
+    proj: Project = st.session_state.get("project")
+    if not proj:
+        st.info("Chưa có project. Hãy tạo project và chọn cốt truyện trước.")
+        return
+    if not proj.seasons:
+        st.warning("Chưa có Mùa nào. Tạo Mùa ở tab Dàn Ý (Outline).")
+        return
+
+    sidx = st.session_state.get("current_season_idx", 0)
+    cur_season = proj.seasons[sidx]
+
+    st.subheader("Chọn tập")
+    if not cur_season.episodes:
+        st.warning("Mùa hiện tại chưa có tập. Hãy tạo dàn ý để sinh các tập.")
+        return
+
+    ep_indices = [f"Tập {ep.index:02d}" for ep in cur_season.episodes]
+    ep_label = st.selectbox("Chọn tập để viết / chỉnh sửa", ep_indices, key=f"ep_select_s{sidx}")
     ep_idx = int(ep_label.split()[1]) - 1
     ep: Episode = cur_season.episodes[ep_idx]
 
-    # ==== Viết tập / Lưu ====
+    # ===== Sinh FULL/ASSETS/TTS =====
     col1, col2 = st.columns(2)
     with col1:
         if st.button(
@@ -209,127 +220,87 @@ def render_section_3(model, use_tts: bool):
             disabled=not bool(model),
             key=f"write_ep_s{sidx}_{ep_idx}"
         ):
-            with st.spinner("Đang viết tập..."):
-                prompt = build_episode_prompt(proj.chosen_storyline, ep.title, ep.summary)
+            with st.spinner("Đang sinh kịch bản tập..."):
+                prompt = build_episode_prompt(
+                    proj.chosen_storyline,
+                    ep.title,
+                    ep.summary,
+                    preset_name=proj.preset
+                )
                 data = gemini_json(model, prompt)
-                if isinstance(data, dict):
-                    ep.script_text = (
-                        data.get("FULL_SCRIPT")
-                        or data.get("full_script")
-                        or json.dumps(data, ensure_ascii=False)
-                    )
-                    assets = data.get("ASSETS") or data.get("assets") or []
-                    tts_txt = data.get("TTS") or data.get("tts") or ""
-                else:
-                    ep.script_text = str(data)
-                    assets = []
-                    tts_txt = ""
-                if isinstance(assets, list):
-                    ep.assets = {"scenes": assets}
-                elif isinstance(assets, dict):
-                    ep.assets = assets
-                else:
-                    ep.assets = {"scenes": []}
-                ep.tts_text = tts_txt or ep.script_text
+
+            if isinstance(data, dict):
+                full_script = data.get("FULL_SCRIPT") or data.get("full_script") or ""
+                assets_list = _assets_list_from_json(data)
+                tts_text = data.get("TTS") or data.get("tts") or ""
+
+                # Chuẩn hoá bảng 3 cột
+                full_script = _normalize_to_table(full_script)
+
+                ep.script_text = full_script
+                ep.assets = {"scenes": assets_list}  # luôn là dict
+                ep.tts_text = clean_tts_text(tts_text)
+
+                # Seed tên nhân vật để dày Character Bible
+                try:
+                    char_from_script = extract_characters(ep.script_text)
+                    char_from_tts = extract_characters(ep.tts_text or "")
+                    char_names_all = sorted(set(char_from_script) | set(char_from_tts))
+                    if char_names_all:
+                        proj.character_bible = proj.character_bible or {"characters": []}
+                        existing = {c.get("name") for c in proj.character_bible.get("characters", [])}
+                        for n in char_names_all:
+                            if n and n not in existing:
+                                proj.character_bible.setdefault("characters", []).append({
+                                    "name": n, "role": "", "age": "",
+                                    "look": "gương mặt Á Đông; tránh nét siêu thực Tây phương",
+                                    "hair": "", "outfit": "", "color_theme": "", "notes": "donghua/cel-shaded"
+                                })
+                except Exception:
+                    pass
+
                 cur_season.episodes[ep_idx] = ep
                 proj.seasons[sidx] = cur_season
                 save_project(proj)
-                st.success("Đã sinh nội dung tập.")
+                st.success("Đã sinh kịch bản & lưu vào project.")
+            else:
+                st.error("AI trả về dữ liệu không đúng định dạng JSON.")
+
     with col2:
-        if st.button("💾 Lưu tập hiện tại", key=f"save_ep_s{sidx}_{ep_idx}"):
+        if st.button("💾 Lưu lại thay đổi hiện tại", key=f"save_ep_s{sidx}_{ep_idx}"):
             cur_season.episodes[ep_idx] = ep
             proj.seasons[sidx] = cur_season
             save_project(proj)
             st.success("Đã lưu.")
 
-    # ==== Tabs ====
-    tabs = st.tabs(["📖 Truyện", "🖼️🎚️ Prompts Ảnh & Âm Thanh", "🗣️ TTS & MP3"])
+    # ===== Tabs =====
+    tabs = st.tabs(["📖 Truyện", "🖼️🎚️ Prompts Ảnh & Âm Thanh", "🗣️ TTS & MP3", "📚 Character Bible"])
 
-    # Tab 1: Script
+    # ---- Tab 1: Script
     with tabs[0]:
         ep.script_text = st.text_area(
-            "Nội dung truyện (có thể chỉnh tay)",
-            value=ep.script_text, height=500, key=f"script_{sidx}_{ep_idx}"
+            "Nội dung truyện (Markdown table 3 cột: Content Type | Detailed Content | Technical Notes)",
+            value=ep.script_text, height=460, key=f"script_{sidx}_{ep_idx}"
         )
-        st.caption("Tip: Giữ phong cách audio-first, phân cảnh rõ, có thoại Hệ Thống.")
+        with st.expander("👀 Xem dạng bảng 3 cột (preview)", expanded=False):
+            try:
+                st.markdown(ep.script_text or "", unsafe_allow_html=False)
+            except Exception:
+                st.info("Chưa có script hoặc script không phải Markdown table.")
+        if st.button("🧹 Chuẩn hoá bảng 3 cột", key=f"normalize_{sidx}_{ep_idx}"):
+            ep.script_text = _normalize_to_table(ep.script_text)
+            st.session_state.project.seasons[sidx].episodes[ep_idx] = ep
+            save_project(st.session_state.project)
+            st.success("Đã chuẩn hoá bảng 3 cột.")
 
-    # Tab 2: Assets & Veo 3.1
+    # ---- Tab 2: Assets + Veo 3.1
     with tabs[1]:
-        scenes = ep.assets.get("scenes", [])
-        new_scenes = []
-
-        st.markdown("#### 🎬 Veo 3.1 — Tạo video prompts (mỗi clip 8s)")
-        col_veo_a, col_veo_b = st.columns(2)
-        with col_veo_a:
-            ar_local = st.selectbox(
-                "Tỉ lệ khung cho tập này", ["16:9", "9:16"],
-                index=(0 if proj.aspect_ratio == "16:9" else 1),
-                key=f"ar_ep_{sidx}_{ep.index}"
-            )
-        with col_veo_b:
-            donghua_local = st.toggle(
-                "Phong cách hoạt hình Trung Quốc (donghua) cho tập",
-                value=proj.donghua_style, key=f"donghua_ep_{sidx}_{ep.index}"
-            )
-
-        char_names_all = [
-            c.get("name", "")
-            for c in (proj.character_bible.get("characters", []) if proj else [])
-        ]
-        char_names_all = [x for x in char_names_all if x]
-
-        max_segments_all = st.number_input(
-            "Số clip 8s tối đa / cảnh", min_value=1, max_value=6, value=3, step=1,
-            key=f"veo_maxseg_all_{ep.index}"
-        )
-        if st.button(
-            "⚡ Sinh Veo 3.1 cho TẤT CẢ cảnh",
-            disabled=not bool(model), key=f"veo_all_{ep.index}"
-        ):
-            if not scenes:
-                st.warning("Chưa có scene để sinh Veo.")
-            else:
-                with st.spinner("Đang sinh prompts Veo 3.1 cho tất cả cảnh…"):
-                    new_scenes_all = []
-                    for i, sc in enumerate(scenes, 1):
-                        sc_name = sc.get("scene", f"Cảnh {i}")
-                        scene_text = sc.get("image_prompt", "") or sc.get("sfx_prompt", "") or ep.summary
-                        char_in_scene = sc.get("characters", [])
-                        opts_scene, default_scene = _sanitize_multiselect_options(char_names_all, char_in_scene)
-
-                        pv = build_veo31_segments_prompt(
-                            ep.title, sc_name, scene_text,
-                            max_segments=max_segments_all, aspect_ratio=ar_local,
-                            donghua_style=bool(donghua_local),
-                            character_bible=proj.character_bible,
-                            characters_in_scene=default_scene
-                        )
-                        veo_data = gemini_json(model, pv)
-                        if isinstance(veo_data, dict) and "segments" in veo_data:
-                            sc["veo31"] = veo_data
-                        else:
-                            sc["veo31"] = {
-                                "scene": sc_name,
-                                "segments": [{
-                                    "title": "Một shot 8s",
-                                    "duration_sec": 8,
-                                    "characters": default_scene,
-                                    "veo_prompt": scene_text[:400] + f" | stylized, 24fps, {ar_local}",
-                                    "sfx": "ambience phù hợp bối cảnh",
-                                    "notes": "fallback"
-                                }]
-                            }
-                        new_scenes_all.append(sc)
-
-                    ep.assets["scenes"] = new_scenes_all
-                    cur_season.episodes[ep_idx] = ep
-                    proj.seasons[sidx] = cur_season
-                    save_project(proj)
-                    st.success("Đã sinh Veo 3.1 cho toàn bộ cảnh.")
-
+        scenes = (ep.assets or {}).get("scenes", [])
+        st.subheader("Cảnh / Prompts")
         if not scenes:
             st.info("Chưa có scene. Hãy nhấn 'Sinh nội dung tập' trước hoặc tự thêm.")
 
+        # Chỉnh từng scene
         for i, sc in enumerate(scenes, 1):
             with st.expander(f"Cảnh {i}: {sc.get('scene','(chưa có tên)')}"):
                 scene_name = st.text_input(
@@ -344,224 +315,113 @@ def render_section_3(model, use_tts: bool):
                     f"SFX Prompt {i}", value=sc.get("sfx_prompt", ""),
                     key=f"sfxp_{sidx}_{ep.index}_{i}"
                 )
-
-                # Nhân vật theo cảnh
-                scene_defaults = sc.get("characters", [])
-                opts_scene, default_scene = _sanitize_multiselect_options(char_names_all, scene_defaults)
-                picked = st.multiselect(
-                    f"Nhân vật xuất hiện (Cảnh {i})",
-                    options=opts_scene, default=default_scene,
-                    key=f"chars_scene_{sidx}_{ep.index}_{i}"
+                chars = st.text_input(
+                    f"Nhân vật xuất hiện {i} (phân tách bởi dấu phẩy)",
+                    value=", ".join(sc.get("characters", []) or []),
+                    key=f"chars_{sidx}_{ep.index}_{i}"
                 )
-                sc["characters"] = picked
+                sc["scene"] = scene_name
+                sc["image_prompt"] = imgp
+                sc["sfx_prompt"] = sfxp
+                sc["characters"] = [c.strip() for c in chars.split(",") if c.strip()]
+                scenes[i-1] = sc
 
-                # Veo per scene
-                st.markdown("**🎬 Veo 3.1 (mỗi clip tối đa 8s)**")
-                max_segments = st.number_input(
-                    f"Số clip 8s tối đa (Cảnh {i})",
-                    min_value=1, max_value=6, value=3, step=1,
-                    key=f"veo_maxseg_{sidx}_{ep.index}_{i}"
+        if st.button("💾 Lưu thay đổi Scenes", key=f"save_scenes_{sidx}_{ep_idx}"):
+            ep.assets = {"scenes": scenes}
+            st.session_state.project.seasons[sidx].episodes[ep_idx] = ep
+            save_project(st.session_state.project)
+            st.success("Đã lưu Scenes.")
+
+        # ===== Veo 3.1 (tạo segments) — dùng form + state để tránh "ẩn mất"
+        st.markdown("---")
+        st.subheader("🎬 Veo 3.1 (tạo segments)")
+
+        # Khóa session theo mùa/tập để giữ state sau rerun
+        veo_key_base = f"veo_{sidx}_{ep.index}"
+        if f"{veo_key_base}_scenes" not in st.session_state:
+            st.session_state[f"{veo_key_base}_scenes"] = scenes or []
+        if f"{veo_key_base}_last_error" not in st.session_state:
+            st.session_state[f"{veo_key_base}_last_error"] = None
+        if f"{veo_key_base}_busy" not in st.session_state:
+            st.session_state[f"{veo_key_base}_busy"] = False
+
+        ss_scenes = st.session_state[f"{veo_key_base}_scenes"]
+
+        # Dùng FORM để tránh rerun giữa chừng
+        with st.form(key=f"{veo_key_base}_form_all"):
+            colV1, colV2 = st.columns([1, 1])
+            with colV1:
+                run_all = st.form_submit_button("⚡ Sinh Veo 3.1 cho TẤT CẢ cảnh", disabled=not bool(model))
+            with colV2:
+                pick = st.number_input(
+                    "Sinh riêng cảnh số",
+                    min_value=1, max_value=max(1, len(ss_scenes)) if ss_scenes else 1,
+                    value=1, step=1, key=f"{veo_key_base}_pick"
                 )
-                if st.button(
-                    f"⚡ Sinh Veo cho Cảnh {i}",
-                    disabled=not bool(model),
-                    key=f"veo_one_{sidx}_{ep.index}_{i}"
-                ):
-                    with st.spinner(f"Đang sinh Veo 3.1 cho Cảnh {i}…"):
-                        src_text = imgp or sfxp or ep.summary
-                        pv = build_veo31_segments_prompt(
-                            ep.title, scene_name, src_text,
-                            max_segments=max_segments, aspect_ratio=ar_local,
-                            donghua_style=bool(donghua_local),
-                            character_bible=proj.character_bible,
-                            characters_in_scene=picked
-                        )
-                        veo_data = gemini_json(model, pv)
-                        if isinstance(veo_data, dict) and "segments" in veo_data:
-                            sc["veo31"] = veo_data
+                run_one = st.form_submit_button("▶️ Sinh Veo cho cảnh đã chọn", disabled=not bool(model))
+
+            if run_all or run_one:
+                st.session_state[f"{veo_key_base}_busy"] = True
+                st.session_state[f"{veo_key_base}_last_error"] = None
+                try:
+                    with st.spinner("Đang sinh Veo 3.1..."):
+                        if run_all:
+                            new_scenes = []
+                            for i, sc in enumerate(ss_scenes, 1):
+                                new_scenes.append(_gen_veo_for_scene(model, proj, ep, sc, max_segments=3))
+                            ss_scenes = new_scenes
                         else:
-                            sc["veo31"] = {
-                                "scene": scene_name,
-                                "segments": [{
-                                    "title": "Một shot 8s",
-                                    "duration_sec": 8,
-                                    "characters": picked,
-                                    "veo_prompt": (src_text[:400] + f" | stylized, 24fps, {ar_local}"),
-                                    "sfx": "ambience phù hợp bối cảnh",
-                                    "notes": "fallback"
-                                }]
-                            }
-                        st.success(f"Đã sinh Veo 3.1 cho Cảnh {i}.")
+                            i = int(pick) - 1
+                            ss_scenes[i] = _gen_veo_for_scene(model, proj, ep, ss_scenes[i], max_segments=3)
 
-                # Hiển thị các segment 8s đã gợi ý
-                veo_obj = sc.get("veo31", {})
-                segments = veo_obj.get("segments", [])
-                if segments:
-                    st.caption("Các clip 8s đã gợi ý:")
-                    merged_prompts = []
-                    for si, seg in enumerate(segments, 1):
-                        with st.expander(f"Clip {si}: {seg.get('title','(chưa có)')} — {seg.get('duration_sec',8)}s", expanded=False):
-                            seg["title"] = st.text_input(
-                                f"Tiêu đề clip {si}",
-                                value=seg.get("title", ""),
-                                key=f"veo_title_{sidx}_{ep.index}_{i}_{si}"
-                            )
-                            seg["duration_sec"] = st.number_input(
-                                f"Thời lượng clip {si} (<=8s)", min_value=1, max_value=8,
-                                value=int(seg.get("duration_sec", 8)),
-                                key=f"veo_dur_{sidx}_{ep.index}_{i}_{si}"
-                            )
-                            seg_chars = seg.get("characters", sc.get("characters", []))
-                            opts_seg, default_seg = _sanitize_multiselect_options(char_names_all, seg_chars)
-                            seg["characters"] = st.multiselect(
-                                f"Nhân vật (clip {si})",
-                                options=opts_seg, default=default_seg,
-                                key=f"veo_chars_{sidx}_{ep.index}_{i}_{si}"
-                            )
-                            seg["veo_prompt"] = st.text_area(
-                                f"Veo prompt {si}",
-                                value=seg.get("veo_prompt", ""),
-                                height=160,
-                                key=f"veo_prompt_{sidx}_{ep.index}_{i}_{si}"
-                            )
-                            seg["sfx"] = st.text_area(
-                                f"SFX/ambience {si}",
-                                value=seg.get("sfx", ""),
-                                height=80,
-                                key=f"veo_sfx_{sidx}_{ep.index}_{i}_{si}"
-                            )
-                            seg["notes"] = st.text_area(
-                                f"Ghi chú {si}",
-                                value=seg.get("notes", ""),
-                                height=60,
-                                key=f"veo_notes_{sidx}_{ep.index}_{i}_{si}"
-                            )
+                        # Cập nhật vào session_state TRƯỚC
+                        st.session_state[f"{veo_key_base}_scenes"] = ss_scenes
 
-                        merged_prompts.append(
-                            f"# {scene_name} — Clip {si} ({seg.get('duration_sec',8)}s)\n"
-                            f"[Characters] {', '.join(seg.get('characters', []))}\n"
-                            f"{seg.get('veo_prompt','')}\n[SFX] {seg.get('sfx','')}"
-                        )
+                        # Đồng bộ ngược vào project & lưu
+                        ep.assets = {"scenes": ss_scenes}
+                        st.session_state.project.seasons[sidx].episodes[ep.index - 1] = ep
+                        save_project(st.session_state.project)
+                        st.success("Đã sinh Veo 3.1.")
+                except Exception as ex:
+                    st.session_state[f"{veo_key_base}_last_error"] = ex
+                    st.exception(ex)
+                finally:
+                    st.session_state[f"{veo_key_base}_busy"] = False
 
-                    sc["veo31"] = {"scene": scene_name, "segments": segments}
-                    st.text_area(
-                        "📋 Copy-all Veo prompts (cảnh này)",
-                        value="\n\n---\n".join(merged_prompts),
-                        height=200, key=f"veo_copy_{sidx}_{ep.index}_{i}"
-                    )
+        # Hiển thị kết quả & lỗi (nếu có)
+        err = st.session_state.get(f"{veo_key_base}_last_error")
+        if err:
+            st.error(f"Lỗi khi tạo Veo: {err}")
 
-                new_scenes.append({
-                    "scene": scene_name,
-                    "image_prompt": imgp,
-                    "sfx_prompt": sfxp,
-                    **({"characters": sc.get("characters")} if sc.get("characters") else {}),
-                    **({"veo31": sc.get("veo31")} if sc.get("veo31") else {})
-                })
-
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("➕ Thêm cảnh trống", key=f"add_scene_{sidx}_{ep_idx}"):
-                new_scenes.append({
-                    "scene": f"Cảnh {len(new_scenes)+1}",
-                    "image_prompt": "",
-                    "sfx_prompt": ""
-                })
-        with c2:
-            if st.button("💾 Lưu Prompts cảnh", key=f"save_scenes_{sidx}_{ep_idx}"):
-                ep.assets["scenes"] = new_scenes
-                cur_season.episodes[ep_idx] = ep
-                proj.seasons[sidx] = cur_season
-                save_project(proj)
-                st.success("Đã lưu danh sách cảnh.")
-        if new_scenes:
-            ep.assets["scenes"] = new_scenes
-
-        st.json(ep.assets)
-
-    # Tab 3: TTS
-    with tabs[2]:
-        st.caption("Trước khi đọc TTS, hệ thống sẽ lọc bỏ **, SFX, heading… và tách thoại nhân vật.")
-        raw = st.text_area(
-            "Văn bản đầu vào TTS (có thể khác với Truyện)",
-            value=ep.tts_text or ep.script_text, height=260,
-            key=f"tts_raw_{sidx}_{ep_idx}"
-        )
-        cleaned = clean_tts_text(raw)
-        if st.toggle("Hiển thị văn bản đã làm sạch", key=f"show_clean_{sidx}_{ep_idx}"):
-            st.text_area("Đã làm sạch", value=cleaned, height=160, key=f"tts_clean_{sidx}_{ep_idx}")
-
-        if st.button("🔎 Phân tích thoại & Nhân vật", key=f"parse_tts_{sidx}_{ep_idx}"):
-            st.session_state.parsed_tts = parse_tts_lines(cleaned)
-            st.success(f"Đã tách {len(st.session_state.parsed_tts)} dòng.")
-
-        parsed = st.session_state.get("parsed_tts", [])
-        if parsed:
-            chars = extract_characters(parsed)
-            st.write("**Nhân vật phát hiện:**", ", ".join(chars) if chars else "(Chỉ có Người Dẫn Chuyện)")
-            style_suggest = suggest_styles(chars)
-
-            if "tts_voices" not in st.session_state:
-                st.session_state.tts_voices = {"Người Dẫn Chuyện": {"voice": "default", "style": "Kể chậm rãi, ấm"}}
-            cfg = st.session_state.tts_voices
-
-            with st.expander("Người Dẫn Chuyện"):
-                cfg.setdefault("Người Dẫn Chuyện", {"voice": "default", "style": "Kể chậm rãi, ấm"})
-                cfg["Người Dẫn Chuyện"]["voice"] = st.selectbox(
-                    "Giọng", ["default", "female_soft", "male_deep"], index=0,
-                    key=f"nar_voice_{sidx}_{ep_idx}"
-                )
-                cfg["Người Dẫn Chuyện"]["style"] = st.text_input(
-                    "Giọng điệu", value=cfg["Người Dẫn Chuyện"].get("style", "Kể chậm rãi, ấm"),
-                    key=f"nar_style_{sidx}_{ep_idx}"
-                )
-
-            for ch in chars:
-                with st.expander(ch):
-                    default_style = style_suggest.get(ch, "Trung tính")
-                    cur = cfg.get(ch, {
-                        "voice": ("female_soft" if "Nữ" in ch else ("robotic" if ch == "HỆ THỐNG" else "male_deep")),
-                        "style": default_style
-                    })
-                    cfg[ch] = cur
-                    options = ["female_soft", "male_deep", "robotic", "youth_bright", "mature_calm"]
-                    idx_opt = options.index(cur["voice"]) if cur["voice"] in options else 0
-                    cfg[ch]["voice"] = st.selectbox(
-                        "Giọng", options, index=idx_opt, key=f"voice_{sidx}_{ep_idx}_{ch}"
-                    )
-                    cfg[ch]["style"] = st.text_input(
-                        "Giọng điệu", value=cur.get("style", default_style), key=f"style_{sidx}_{ep_idx}_{ch}"
-                    )
-
-            st.info("gTTS chỉ 1 giọng. Để đa giọng thực sự, dùng ElevenLabs/Azure + pydub.")
-
-            colr1, colr2 = st.columns(2)
-            with colr1:
-                if use_tts and st.button("🎙️ Render MP3", key=f"render_tts_{sidx}_{ep_idx}"):
-                    with st.spinner("Đang render TTS…"):
-                        if gTTS is None:
-                            st.error("gTTS chưa được cài. pip install gtts")
-                        else:
-                            merged_text = " ".join([it["text"] for it in parsed])
-                            if not merged_text.strip():
-                                st.warning("Không có văn bản để đọc.")
-                            else:
-                                from pathlib import Path
-                                out_path = (
-                                    Path(__file__).resolve().parents[1]
-                                    / "projects"
-                                    / f"{_safe_name(proj.name)}_S{sidx+1:02d}_E{ep.index:02d}.mp3"
-                                )
-                                gTTS(text=merged_text, lang="vi").save(str(out_path))
-                                st.audio(str(out_path))
-                                st.success(f"Đã xuất: {out_path.name}")
-
-            with colr2:
-                if AudioSegment is None:
-                    st.caption("(Tuỳ chọn) Cài pydub + ffmpeg để ghép phân đoạn đa giọng.")
+        for i, sc in enumerate(st.session_state[f"{veo_key_base}_scenes"], 1):
+            with st.expander(f"🎬 Kết quả Veo — Cảnh {i}: {sc.get('scene','(chưa có tên)')}", expanded=False):
+                if "veo_prompt" in sc:
+                    st.caption("Prompt đã dùng:")
+                    st.code(sc["veo_prompt"], language="markdown")
+                segs = sc.get("veo31_segments") or []
+                if segs:
+                    st.caption("Segments (JSON):")
+                    st.json({"segments": segs})
                 else:
-                    st.caption("pydub đã sẵn sàng.")
+                    raw = sc.get("veo_raw_response")
+                    if raw:
+                        st.caption("Phản hồi thô (không đúng schema segments):")
+                        st.json(raw)
+                    else:
+                        st.caption("Chưa có segments. Hãy bấm nút sinh Veo ở trên.")
 
-    # apply back
-    cur_season.episodes[ep_idx] = ep
-    proj.seasons[sidx] = cur_season
-    st.session_state.project = proj
+    # ---- Tab 3: TTS
+    with tabs[2]:
+        st.subheader("TTS Text")
+        ep.tts_text = st.text_area(
+            "Bản TTS (có thể chỉnh tay trước khi render giọng)",
+            value=ep.tts_text or "", height=300, key=f"tts_{sidx}_{ep_idx}"
+        )
+        if HAS_GTTS and use_tts:
+            st.caption("gTTS khả dụng. (Tạo MP3 nên chạy cục bộ để tránh giới hạn thời gian).")
+        else:
+            st.caption("Bạn có thể copy TTS text để dùng với công cụ TTS khác.")
+
+    # ---- Tab 4: Character Bible
+    with tabs[3]:
+        _render_character_bible_block(model, proj, ep, sidx, ep_idx)

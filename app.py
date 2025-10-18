@@ -14,7 +14,7 @@ st.set_page_config(page_title="Gemini Story Studio", page_icon="🎧", layout="w
 
 # Session init
 if "project" not in st.session_state:
-    st.session_state.project: Project | None = None
+    st.session_state.project = None
 if "current_season_idx" not in st.session_state:
     st.session_state.current_season_idx = 0
 if "storyline_choices" not in st.session_state:
@@ -28,7 +28,6 @@ model = init_model(api_key, model_name) if api_key else None
 st.title("🎧 Gemini Story Studio — Xuyên Không / Ngôn Tình / Hệ Thống")
 
 # Sections
-preset_label = "Trung Quốc · Xuyên Không · Ngôn Tình · Hệ Thống"
-render_section_1(model, preset_label)
+render_section_1(model)
 render_section_2(model)
 render_section_3(model, use_tts)
