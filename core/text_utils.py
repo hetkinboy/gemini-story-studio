@@ -12,7 +12,8 @@ def _safe_name(s: str) -> str:
 
 def capcut_sfx_name(effect_type: str) -> str:
     """
-    Gợi ý FX theo loại nội dung (sound effects / bgm / transition).
+    Trả về gợi ý tên effect/nhạc trong CapCut tương ứng với loại nội dung.
+    Dùng khi build bảng 3 cột để dễ tìm lại trong CapCut.
     """
     effect_type = (effect_type or "").lower()
     sfx_map = {

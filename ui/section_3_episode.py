@@ -26,30 +26,50 @@ except Exception:
 
 def _normalize_to_table(text: str) -> str:
     """
-    Chuẩn hoá nội dung về bảng Markdown 3 cột:
+    Chuẩn hoá nội dung thành bảng Markdown 3 cột:
     | Content Type | Detailed Content | Technical Notes |
-    |---|---|---|
-    (tự chèn gợi ý CapCut + ĐẢM BẢO có 3 dòng FX:    SFX / BGM / Transition (nếu thiếu))
-    """ 
+    + Tự động thêm gợi ý FX và BGM (CapCut).
+    """
+    import re
+    from core.text_utils import capcut_sfx_name
+
     if not text:
         return ""
-    # Nếu đã có header đúng, giữ nguyên
-    if re.search(
-        r'^\|\s*Content Type\s*\|\s*Detailed Content\s*\|\s*Technical Notes\s*\|\s*$',
-        text, flags=re.I | re.M
-    ):
-        return text
 
     lines = [
         "| Content Type | Detailed Content | Technical Notes |",
         "|---|---|---|",
     ]
+
+    # mapping BGM gợi ý riêng (CapCut BGM)
+    capcut_bgm_map = {
+        "narration": "CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind, Story Theme …",
+        "dialogue": "CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background …",
+        "voice system": "CapCut BGM: Digital Drone, Synth Pad, Sci-Fi Ambient, Echo Pulse …",
+        "bgm": "CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise …",
+        "sound effects": "CapCut FX: Sword Clash, Footsteps, Explosion, Whoosh Short …",
+        "transition": "CapCut FX: Flash Transition, Wind Sweep, Page Turn …",
+    }
+
+    # kiểm tra nếu đã có header thì không cần thêm lại
+    if re.search(r'^\|\s*Content Type\s*\|\s*Detailed Content\s*\|\s*Technical Notes', text, flags=re.I | re.M):
+        raw_lines = [l for l in text.splitlines() if not l.strip().startswith("|---")]
+        for ln in raw_lines:
+            if not ln.strip():
+                continue
+            if "Content Type" in ln:
+                continue
+            lines.append(ln)
+        return "\n".join(lines)
+
+    # xử lý từ raw text
     for raw in text.splitlines():
         s = raw.strip()
         if not s:
             continue
         ctype, content, notes = "Narration", s, ""
         low = s.lower()
+
         if low.startswith("narration:"):
             ctype, content = "Narration", s.split(":", 1)[1].strip()
         elif low.startswith("dialogue:") or low.startswith("dialog:"):
@@ -67,14 +87,22 @@ def _normalize_to_table(text: str) -> str:
         elif low.startswith("transition:"):
             ctype, content = "Transition", s.split(":", 1)[1].strip()
 
-        # Escape '|' để không vỡ bảng
-        content = content.replace("|", r"\|")
-        notes = notes.replace("|", r"\|")
+        # Gợi ý FX (cũ)
+        capcut_hint_fx = capcut_sfx_name(ctype)
 
-        # Gợi ý CapCut FX theo loại
-        capcut_hint = capcut_sfx_name(ctype)
-        note_full = (notes + " " + capcut_hint).strip() 
-        lines.append(f"| {ctype} | {content} | {note_full} |")
+        # Gợi ý nhạc (mới)
+        capcut_hint_bgm = ""
+        for k, v in capcut_bgm_map.items():
+            if k in low:
+                capcut_hint_bgm = v
+                break
+
+        # hợp nhất ghi chú
+        all_notes = " ".join([notes, capcut_hint_fx, capcut_hint_bgm]).strip()
+        all_notes = all_notes.replace("|", r"\|")
+
+        lines.append(f"| {ctype} | {content.replace('|', r'\\|')} | {all_notes} |")
+
     return "\n".join(lines)
 
 
