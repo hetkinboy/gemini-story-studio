@@ -5,17 +5,60 @@ Centralized preset registry for Gemini Story Studio.
 Each preset defines tone/style/world/tropes and audio-first hints
 that will be injected into prompt builders.
 """
-
+#    "Trung Quốc · Xuyên Không · Ngôn Tình · Hệ Thống": {
+#         "tagline": "Xuyên không – báo thù – cặp đôi định mệnh – giọng Trung Hoa audio-first.",
+#         "tone": "kịch tính, giàu nội tâm, cao trào dồn dập; tiết tấu cảnh rõ ràng",
+#         "style": "miêu tả âm thanh dày, đối thoại có nhịp nghỉ, từ vựng Á Đông (đừng tây hoá)",
+#         "world": "cổ đại giả tưởng với bang phái, gia tộc, bí cảnh, hệ thống nhiệm vụ",
+#         "tropes": ["hôn ước", "phản bội", "nợ máu", "tu luyện cấp bậc", "bí kíp/linh căn"],
+#         "taboos": ["siêu anh hùng kiểu Mỹ", "hài lố", "slang hiện đại quá mức"],
+#         "image_style": "donghua, nét Á Đông, ánh sáng filmic ấm, palette đỏ–vàng–đen",
+#         "sfx_style": "chiêng trống, tì bà, tiếng áo lụa, kiếm khí, ambience cổ trấn",
+#     },
 PRESETS = {
-    "Trung Quốc · Xuyên Không · Ngôn Tình · Hệ Thống": {
-        "tagline": "Xuyên không – báo thù – cặp đôi định mệnh – giọng Trung Hoa audio-first.",
-        "tone": "kịch tính, giàu nội tâm, cao trào dồn dập; tiết tấu cảnh rõ ràng",
-        "style": "miêu tả âm thanh dày, đối thoại có nhịp nghỉ, từ vựng Á Đông (đừng tây hoá)",
-        "world": "cổ đại giả tưởng với bang phái, gia tộc, bí cảnh, hệ thống nhiệm vụ",
-        "tropes": ["hôn ước", "phản bội", "nợ máu", "tu luyện cấp bậc", "bí kíp/linh căn"],
-        "taboos": ["siêu anh hùng kiểu Mỹ", "hài lố", "slang hiện đại quá mức"],
-        "image_style": "donghua, nét Á Đông, ánh sáng filmic ấm, palette đỏ–vàng–đen",
-        "sfx_style": "chiêng trống, tì bà, tiếng áo lụa, kiếm khí, ambience cổ trấn",
+ 
+     "Trung Quốc": {
+        "tagline": "Không khí Á Đông đậm nét, nghi lễ – gia tộc – môn phái.",
+        "tone": "trang trọng, dày văn hoá, nhịp vừa – có cao trào khi cần",
+        "style": "từ vựng cổ phong, ẩn dụ, phép xưng hô – tước vị chuẩn; tránh tây hoá",
+        "world": "cổ đại giả tưởng: hoàng triều, gia tộc, bang phái, sơn xuyên, cổ trấn",
+        "tropes": ["gia pháp – tông quy", "môn quy – lễ nghi", "án oan – mật chỉ"],
+        "taboos": ["slang hiện đại", "siêu anh hùng kiểu Mỹ"],
+        "image_style": "donghua, nét Á Đông, ánh đèn lồng ấm, palette đỏ–vàng–đen",
+        "sfx_style": "tỳ bà, chiêng trống, tiếng áo lụa, guốc gỗ, ambience cổ trấn",
+    },
+
+    "Xuyên Không": {
+        "tagline": "Linh hồn vượt thời – đổi thân phận – mở màn sốc văn minh.",
+        "tone": "kịch tính mở đầu, kinh ngạc → thích nghi, nhịp tăng dần",
+        "style": "mô tả sự lệch pha văn minh, độc thoại nội tâm sắc nét",
+        "world": "thế giới đích: cổ/giả tưởng, bang phái, quy tắc khác lạ",
+        "tropes": ["thân xác mới", "kiến thức hiện đại áp dụng cổ đại", "bảng nhiệm vụ đầu tiên"],
+        "taboos": ["giải thích khoa học dông dài phá nhịp", "hài lố quá tay"],
+        "image_style": "chuyển cảnh ánh sáng xoáy, viền sáng linh hồn, filmic ấm – lạnh tương phản",
+        "sfx_style": "whoosh xuyên thời, nhịp tim, âm vọng xa, chime siêu thực",
+    },
+
+    "Ngôn Tình": {
+        "tagline": "Cặp đôi định mệnh – hiểu lầm – cứu rỗi – hoá giải.",
+        "tone": "giàu nội tâm, êm – bùng – lắng, chú trọng cảm xúc",
+        "style": "đối thoại có nhịp nghỉ, ẩn ý – luyến tiếc – thổ lộ",
+        "world": "gia tộc – triều chính – giang hồ tuỳ bối cảnh; trọng quan hệ",
+        "tropes": ["hôn ước", "phản bội – tín nhiệm lại", "đồng sinh cộng tử", "gato nhẹ"],
+        "taboos": ["hài lố", "slang hiện đại quá mức"],
+        "image_style": "soft light, bloom nhẹ, close-up ánh mắt – bàn tay",
+        "sfx_style": "tiếng thở, vải khẽ động, đàn tỳ bà/piano nhẹ, ambience đêm",
+    },
+
+    "Hệ Thống": {
+        "tagline": "Giao diện nhiệm vụ – thăng cấp – thưởng phạt – build meta.",
+        "tone": "rõ ràng, nhịp mạch nhiệm vụ, tăng độ thử thách",
+        "style": "log hệ thống gọn; tooltip/thuộc tính; quyết định có hậu quả",
+        "world": "bí cảnh – phụ bản – trial; tích điểm, bảng xếp hạng",
+        "tropes": ["nhiệm vụ ẩn", "phần thưởng bất ngờ", "debuff/penalty", "build đa nhánh"],
+        "taboos": ["spam thuật ngữ rối mắt", "đứt mạch cảm xúc vì bảng số"],
+        "image_style": "HUD bán trong suốt, ánh viền lam, hạt light UI",
+        "sfx_style": "UI blip, confirm ping, level-up chime, critical hit",
     },
     "Tu Tiên · Huyền Huyễn": {
         "tagline": "Tu đạo–nghịch thiên, đại giáo phái, bí cảnh sát phạt, thiên kiếp.",

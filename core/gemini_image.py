@@ -25,7 +25,7 @@ def _first_image_from_parts(parts) -> Optional[Image.Image]:
 
 def gemini25_image_generate(
     prompt: str,
-    model_name: str = "gemini-2.5-flash",
+    model_name: str = "gemini-2.5-flash-image",
     size_hint: str = "1024x576",
 ) -> Tuple[Optional[Image.Image], str]:
     """

@@ -555,7 +555,7 @@ def render_section_3(model, use_tts: bool):
         with colI1:
             img_model = st.selectbox(
                 "Model ảnh",
-                options=["gemini-2.5-flash-image"],
+                options=["gemini-2.5-flash-image",'gemini-2.5-flash'],
                 index=0,
                 help="Gemini 2.5 Flash Image (Nano Banana)."
             )
