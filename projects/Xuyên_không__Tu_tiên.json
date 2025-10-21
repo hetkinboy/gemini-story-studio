@@ -1,0 +1,208 @@
+{
+  "name": "Xuyên không  Tu tiên",
+  "idea": "Bị tai nạn xe, SAu đó xuyên không vào thế giới tu tiên huyền huyễn, \nTu luyện 1 đời định phong. \nSau đó quay lại trái đất tìm cha mẹ. \nHãy viết câu chuyện cảnh đầu tiên sẽ nói về lúc đó thanh niên đã lên đỉnh phong về chuẩn bị về trái đất. \nTiếp tục là câu chuyện trên trái đất ",
+  "preset": "Trung Quốc, Xuyên Không, Tu Tiên · Huyền Huyễn",
+  "storyline_choices": [
+    "Chí Tôn Trở Về: Trái Đất Không Còn Là Chốn Bình Yên Cho Gia Tộc\n\nBối cảnh: Bị đối thủ kinh doanh của gia đình hãm hại gây tai nạn, Diệp Trần xuyên không đến Tu Tiên Giới, tu luyện vạn năm trở thành Vô Thượng Đế Tôn. Mở đường máu trở về, anh phát hiện Trái Đất chỉ qua mười năm, nhưng gia tộc đã suy tàn, cha mẹ bị kẻ thù cũ chèn ép đến khốn cùng. Mâu thuẫn chính là hành trình báo thù, vực dậy gia tộc và bảo vệ người thân trước thế lực đối thủ nay đã vươn vòi khắp toàn cầu. Quy tắc thế giới: Linh khí Trái Đất cạn kiệt, sức mạnh của Diệp Trần bị áp chế chỉ còn 1%, pháp bảo phần lớn mất thiêng. Anh phải dùng kiến thức tu tiên để tái chế tạo pháp khí từ vật liệu trần thế. Cao trào cuối mùa hứa hẹn trận chiến sinh tử với kẻ chủ mưu năm xưa, kẻ nay được một tổ chức tu chân cổ đại bí ẩn của Trái Đất chống lưng, trận chiến sẽ quyết định số phận gia tộc và hé lộ bí mật về sự biến mất của linh khí.",
+    "Tiên Đế Tái Lâm: Thần Y Tu Tiên Giữa Lòng Đô Thị Hiện Đại\n\nBối cảnh: Lâm Phong gặp tai nạn và rơi vào trạng thái sống thực vật, linh hồn anh may mắn xuyên không, tu luyện thành Dược Tiên đệ nhất Tiên Giới. Khi trở về và thức tỉnh, anh đối mặt với cảnh cha mẹ già yếu, nợ nần chồng chất vì chi phí chữa bệnh cho mình. Mâu thuẫn chính: Lâm Phong sử dụng y thuật tu tiên siêu phàm để chữa bệnh cứu người, kiếm tiền phụng dưỡng cha mẹ, nhưng lại vô tình đụng độ các tập đoàn y dược khổng lồ và thế giới ngầm của những dị nhân sở hữu năng lực đặc biệt. Anh dần nảy sinh tình cảm với một nữ bác sĩ nhiệt huyết, người vừa ngưỡng mộ vừa hoài nghi khả năng thần kỳ của anh. Cơ chế thế giới: Sức mạnh chiến đấu bị quy luật nhân quả Trái Đất hạn chế, nhưng khả năng luyện đan, chữa trị lại được khuếch đại. Cao trào cuối mùa: Một loại virus nhân tạo chết người bùng phát, anh phải chạy đua với thời gian để luyện ra linh đan cứu thế, đồng thời vạch trần âm mưu của tập đoàn dược phẩm đứng sau.",
+    "Ta Trở Về Và Linh Khí Trái Đất Bỗng Dưng Thức Tỉnh\n\nBối cảnh: Vụ tai nạn của Lý Thiên vốn là một âm mưu nhằm bịt đầu mối về một di tích cổ. Anh xuyên không, tu luyện thành Thánh Nhân, rồi dùng đại thần thông phá vỡ không gian trở về đúng vị trí năm xưa. Mâu thuẫn chính: Việc anh trở về vô tình phá vỡ một phong ấn cổ đại, khiến linh khí Trái Đất đột ngột hồi sinh. Động thực vật biến dị, con người thức tỉnh dị năng, các môn phái cổ xưa tái xuất. Lý Thiên phải bảo vệ gia đình và dẫn dắt nhân loại thích nghi với trật tự thế giới mới, đồng thời chống lại các thế lực trong và ngoài nước muốn độc chiếm tài nguyên tu luyện. Quy tắc thế giới: Trái Đất có hệ thống tu luyện riêng biệt, sức mạnh của Lý Thiên tuy vượt trội nhưng phải học cách dung hợp với quy tắc mới. Các di tích cổ chứa đựng bí mật của một nền văn minh tu chân đã mất. Cao trào hứa hẹn cuộc chiến chống lại cuộc xâm lược từ một dị giới khác khi cánh cổng không gian đột ngột mở ra.",
+    "Trở Về Từ Tiên Giới: Ta Mang Theo Lời Nguyền Của Vạn Giới\n\nBối cảnh: Tai nạn thực chất là sự kiện một Thần Khí vũ trụ chọn Tần Vũ làm vật chủ, đưa anh đến Tu Tiên Giới để rèn luyện. Sau khi tu lên đỉnh phong và hoàn toàn dung hợp với Thần Khí, anh trở về. Mâu thuẫn chính: Tần Vũ phát hiện Thần Khí là mục tiêu săn lùng của các thế lực hùng mạnh khắp đa vũ trụ. Trái Đất yên bình bỗng trở thành chiến trường. Anh phải vừa che giấu thân phận để bảo vệ cha mẹ và cô bạn thanh mai trúc mã, vừa đối đầu với những thợ săn đa vũ trụ, các vị thần sa ngã và những sinh vật không gian kỳ dị. Cơ chế thế giới: Mỗi lần Tần Vũ sử dụng sức mạnh lớn của Thần Khí, nó sẽ để lại dấu vết không gian, thu hút thêm kẻ thù. Anh có thể lợi dụng các vết nứt không gian nhỏ để di chuyển và chiến đấu. Hứa hẹn cao trào: Kẻ thù mạnh nhất giáng lâm, bắt cóc gia đình anh. Tần Vũ buộc phải giải phóng toàn bộ sức mạnh của Thần Khí, đối mặt với nguy cơ hủy diệt cả hệ mặt trời để cứu người thân.",
+    "Tiên Tôn Về Hưu: Gác Lại Đạo Pháp, Tìm Lại An Yên Chốn Trần Gian\n\nBối cảnh: Trần An xuyên không sau tai nạn, tu luyện vạn năm thành Tiên Tôn, nhưng trong trận chiến đột phá cảnh giới cuối cùng lại thất bại, tâm cảnh bị tổn thương và mất hết ý chí chiến đấu. Anh trở về Trái Đất chỉ với một mong muốn: sống cuộc đời bình lặng bên cha mẹ. Mâu thuẫn chính: Mâu thuẫn không đến từ kẻ thù siêu nhiên, mà từ chính nội tâm của Trần An và những rắc rối đời thường. Anh, một cựu Tiên Tôn, lại chật vật đối phó với công việc, tiền bạc, quan hệ xã hội. Việc gặp lại bạn gái cũ, nay đã có cuộc sống riêng, càng khiến anh day dứt. Quy tắc thế giới: Anh sở hữu toàn bộ sức mạnh nhưng tự đặt ra giới hạn không sử dụng. Tuy nhiên, khi người thân bị đe dọa bởi một băng đảng tội phạm, tâm ma từ lần đột phá thất bại lại trỗi dậy, uy hiếp giải phóng sức mạnh hủy diệt. Cao trào cuối mùa: Trần An đứng trước lựa chọn: tiếp tục ẩn mình hay một lần nữa giải phóng sức mạnh Tiên Tôn để bảo vệ gia đình, phơi bày sự tồn tại của mình trước toàn thế giới."
+  ],
+  "chosen_storyline": "Chí Tôn Trở Về: Trái Đất Không Còn Là Chốn Bình Yên Cho Gia Tộc\n\nBối cảnh: Bị đối thủ kinh doanh của gia đình hãm hại gây tai nạn, Diệp Trần xuyên không đến Tu Tiên Giới, tu luyện vạn năm trở thành Vô Thượng Đế Tôn. Mở đường máu trở về, anh phát hiện Trái Đất chỉ qua mười năm, nhưng gia tộc đã suy tàn, cha mẹ bị kẻ thù cũ chèn ép đến khốn cùng. Mâu thuẫn chính là hành trình báo thù, vực dậy gia tộc và bảo vệ người thân trước thế lực đối thủ nay đã vươn vòi khắp toàn cầu. Quy tắc thế giới: Linh khí Trái Đất cạn kiệt, sức mạnh của Diệp Trần bị áp chế chỉ còn 1%, pháp bảo phần lớn mất thiêng. Anh phải dùng kiến thức tu tiên để tái chế tạo pháp khí từ vật liệu trần thế. Cao trào cuối mùa hứa hẹn trận chiến sinh tử với kẻ chủ mưu năm xưa, kẻ nay được một tổ chức tu chân cổ đại bí ẩn của Trái Đất chống lưng, trận chiến sẽ quyết định số phận gia tộc và hé lộ bí mật về sự biến mất của linh khí.",
+  "seasons": [
+    {
+      "season_index": 1,
+      "episode_count": 10,
+      "outline": [
+        {
+          "title": "Tập 1: Đế Tôn Trở Về",
+          "beat": "Diệp Trần, Vô Thượng Đế Tôn của Tu Tiên Giới, trở về Trái Đất sau vạn năm nhưng chỉ thấy gia tộc suy vong, cha mẹ khốn cùng. Anh dễ dàng trừng trị đám côn đồ của kẻ thù cũ là Kỷ gia, nhưng tin tức về sự trở lại của anh đã đến tai Kỷ Thiếu, kẻ đang muốn dẫm nát tàn dư cuối cùng của Diệp gia."
+        },
+        {
+          "title": "Tập 2: Cái Tát Đầu Tiên",
+          "beat": "Đối mặt với Kỷ Thiếu đến tận nhà sỉ nhục, Diệp Trần dùng thực lực nghiền nát đám vệ sĩ chuyên nghiệp, gieo rắc nỗi sợ hãi đầu tiên vào lòng kẻ thù. Nhận ra pháp bảo đã mất thiêng vì linh khí cạn kiệt, anh quyết định đến một buổi đấu giá ngọc thạch để tìm vật liệu luyện khí, nơi anh chắc chắn sẽ tái ngộ Kỷ gia."
+        },
+        {
+          "title": "Tập 3: Ngọc Báu Ẩn Tàng",
+          "beat": "Tại buổi đấu giá, Diệp Trần bị giới thượng lưu khinh miệt nhưng lại dùng tuệ nhãn nhìn thấu một khối nguyên thạch bỏ đi chứa đầy linh khí, đoạt lấy nó ngay trước mũi Kỷ Thiếu. Từ khối ngọc, anh luyện ra một tấm bùa hộ mệnh cho cha mẹ, đồng thời hành tung bí ẩn của anh đã lọt vào mắt một lão võ sư ẩn mình trong buổi đấu giá."
+        },
+        {
+          "title": "Tập 4: Tình Cũ Nghĩa Mới",
+          "beat": "Diệp Trần tìm lại Chú Ba, thuộc hạ trung thành năm xưa của gia đình, giúp chú bảo vệ sản nghiệp nhỏ khỏi sự chèn ép của Kỷ gia và có được thông tin quan trọng về các hoạt động phi pháp của chúng. Cùng lúc, vị lão võ sư tìm đến thách đấu, nhưng bị Diệp Trần khuất phục hoàn toàn và cam tâm đi theo, trở thành trợ thủ đắc lực đầu tiên."
+        },
+        {
+          "title": "Tập 5: Sát Thủ Lộ Diện",
+          "beat": "Kỷ Lão, cha của Kỷ Thiếu, nhận ra sự bất thường của Diệp Trần và thuê một sát thủ ngoại quốc có sức mạnh dị thường đến ám sát. Trong trận chiến, Diệp Trần phát hiện vũ khí của kẻ địch có thể gây nhiễu loạn linh lực của mình, chứng tỏ Kỷ gia được một thế lực bí ẩn khác chống lưng."
+        },
+        {
+          "title": "Tập 6: Thiên Môn Xuất Hiện",
+          "beat": "Diệp Trần cùng hai trợ thủ đột kích một kho hàng của Kỷ gia, không chỉ đối đầu với tay chân bình thường mà còn cả hai tu sĩ cấp thấp. Anh bắt sống một tên, qua tra khảo biết được kẻ chống lưng cho Kỷ gia là Thiên Môn, một tổ chức tu chân cổ đại đang âm thầm thao túng Trái Đất."
+        },
+        {
+          "title": "Tập 7: Phá Vỡ Nghi Lễ",
+          "beat": "Theo tin tức, Diệp Trần đột nhập mật địa của Thiên Môn hòng phá hoại nghi lễ truyền công cho Kỷ Lão, trực tiếp đối đầu với lão và một trưởng lão của tổ chức. Anh đả bại chúng nhưng kẻ địch đã kịp tiết lộ rằng tai nạn mười năm trước không đơn thuần là tranh chấp thương trường, mà là một âm mưu lớn hơn nhắm vào chính anh."
+        },
+        {
+          "title": "Tập 8: Cái Giá Của Sự Tức Giận",
+          "beat": "Để trả đũa, Thiên Môn bắt cóc cha mẹ Diệp Trần, buộc anh phải một mình xông vào trụ sở của chúng, nơi được bố trí trận pháp áp chế tu vi. Dù cứu được người thân, Diệp Trần cũng bị trọng thương bởi một trận pháp uy lực, khiến anh nhận ra thực lực 1% hiện tại là không đủ."
+        },
+        {
+          "title": "Tập 9: Mắt Bão Kỷ Gia",
+          "beat": "Để chữa thương và đột phá giới hạn, Diệp Trần cần hấp thụ nguồn linh khí khổng lồ từ linh mạch của thành phố, nơi mà Kỷ gia đã xây dựng tòa tháp trụ sở toàn cầu ngay trên đó. Anh lên kế hoạch tấn công tổng lực, biết rằng đây là canh bạc sinh tử sẽ kinh động toàn bộ Thiên Môn."
+        },
+        {
+          "title": "Tập 10: Phán Quyết Của Đế Tôn",
+          "beat": "Trong trận chiến cuối cùng tại đỉnh tòa tháp, Diệp Trần mượn sức mạnh linh mạch để tạm thời khôi phục một phần sức mạnh Đế Tôn, đánh bại trưởng lão Thiên Môn và phế truất Kỷ Lão. Trước khi gục ngã, vị trưởng lão tiết lộ sự thật động trời: Thiên Môn rút cạn linh khí Trái Đất là để gia cố một phong ấn cổ đại ngăn chặn một hiểm họa ngoài vũ trụ."
+        }
+      ],
+      "episodes": [
+        {
+          "index": 1,
+          "title": "Tập 1: Đế Tôn Trở Về",
+          "summary": "Diệp Trần, Vô Thượng Đế Tôn của Tu Tiên Giới, trở về Trái Đất sau vạn năm nhưng chỉ thấy gia tộc suy vong, cha mẹ khốn cùng. Anh dễ dàng trừng trị đám côn đồ của kẻ thù cũ là Kỷ gia, nhưng tin tức về sự trở lại của anh đã đến tai Kỷ Thiếu, kẻ đang muốn dẫm nát tàn dư cuối cùng của Diệp gia.",
+          "script_text": "| Content Type | Detailed Content | Technical Notes |\n|---|---|---|\n| **SCENE 1** | **KHÔNG GIAN HỖN LOẠN -> CON HẺM TỐI** |  |\n| BGM | Nhạc nền hùng tráng, mang âm hưởng vũ trụ, dồn dập và choáng ngợp. | Music: Epic, cosmic orchestra. CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise … |\n| Sound Effects | Tiếng xé rách không gian dữ dội, âm thanh hỗn loạn của dòng năng lượng cuộn xoáy. Gió gào thét. | SFX: Fabric of reality tearing, chaotic energy whoosh, howling wind. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Narration | Giữa hư không vô tận, một bàn tay xé toạc màn đêm. Từ trong vết nứt, một bóng người bước ra. Đó là Diệp Trần, Vô Thượng Đế Tôn, kẻ đứng trên đỉnh vạn giới. | CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind … |\n| BGM | Nhạc nền đột ngột tắt lịm. | Music: Abrupt cut to silence. CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise … |\n| Transition | Âm thanh chuyển cảnh đột ngột, từ tiếng gào thét của vũ trụ sang sự im lặng đến rợn người của một con hẻm nhỏ. | TRANSITION: Cosmic roar cuts to near-silence. CapCut FX: Whoosh Short, Flash Transition, Riser Hit, Cinematic Drop, Wind Sweep … |\n| Sound Effects | Tiếng bước chân nhẹ bẫng đáp xuống nền bê tông ẩm ướt. Tiếng giọt nước tí tách từ mái tôn rỉ sét. Tiếng gió luồn qua khe hẹp, mang theo hơi lạnh. Tiếng còi xe cứu thương văng vẳng từ xa. | SFX: Light landing on wet concrete, water dripping, wind whistling through alley, distant siren. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Narration | Vạn năm ở Tu Tiên Giới... chỉ là mười năm ở Trái Đất. Diệp Trần hít một hơi thật sâu. Không khí khô khốc, mỏng manh và gần như không có chút linh khí nào. Sức mạnh trong cơ thể anh bị một quy tắc vô hình áp chế, chỉ còn lại chưa tới một phần trăm. | CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind … |\n| Sound Effects | Tiếng hít vào sâu, khẽ và dài. Tiếng áo bào lụa thượng hạng sột soạt khi anh cử động, bám đầy bụi bẩn trần thế. | SFX: Sharp, deep inhale. Rustle of fine silk robes getting dirty. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Dialogue | **Diệp Trần (nói với chính mình, giọng khàn và trầm):** Trở về rồi... Cha, mẹ... con về rồi đây. | Tone: Hoarse, deep, filled with suppressed emotion. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| **SCENE 2** | **BÊN NGOÀI CĂN NHÀ CŨ NÁT** |  |\n| Transition | Tiếng bước chân của Diệp Trần vang lên, đều đặn trên vỉa hè nứt vỡ, hòa vào tiếng ồn ào của phố xá. | TRANSITION: Footsteps ambience leads into the next scene. CapCut FX: Whoosh Short, Flash Transition, Riser Hit, Cinematic Drop, Wind Sweep … |\n| BGM | Giai điệu piano buồn, da diết nổi lên, gợi cảm giác hoài niệm và mất mát. | Music: Melancholy, nostalgic piano theme. CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise … |\n| Narration | Ký ức dẫn lối Diệp Trần về khu phố xưa, nhưng dinh thự nguy nga của Diệp gia đã biến mất, thay vào đó là một căn nhà cấp bốn nhỏ bé, cũ nát. Cánh cổng sắt hoen gỉ, bức tường loang lổ vết mưa. | CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind … |\n| Sound Effects | Tiếng la hét, chửi rủa đầy hung hãn vang ra từ ngôi nhà. Tiếng đồ đạc bị đập vỡ loảng xoảng. Tiếng khóc nức nở của một người phụ nữ. | SFX: Aggressive shouting, things breaking/smashing, a woman's sobbing. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| BGM | Nhạc piano nhỏ dần, thay bằng một đoạn nhạc nền căng thẳng, dồn dập. | Music: Piano fades, tension builds with a pulsing, low-frequency track. CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise … |\n| Dialogue | **Tên Côn Đồ 1 (gằn giọng):** Ông bà già! Có nghe không hả? Kỷ thiếu gia cho hạn cuối cùng hôm nay! Không giao sổ đỏ thì đừng trách sao bọn này ác! | Tone: Guttural, threatening. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| Dialogue | **Ông Diệp (giọng yếu ớt, cố gắng cứng rắn):** Các cậu... các cậu đừng ép người quá đáng! Diệp gia chúng tôi dù sao cũng... | Tone: Weak but trying to be firm. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| Dialogue | **Tên Côn Đồ 2 (cười khẩy):** Diệp gia? Cái gia tộc tàn mạt đó mà còn dám nhắc tới à? Mau đưa đây! | Tone: Scornful, mocking laugh. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| Sound Effects | Tiếng một cái tát khô khốc vang lên. Tiếng bà Diệp hét lên một tiếng thất thanh. | SFX: A sharp, loud slap. A woman's short, terrified scream. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| **SCENE 3** | **CƠN GIẬN CỦA ĐẾ TÔN** |  |\n| BGM | Nhạc căng thẳng đột ngột im bặt. | Music: All music cuts out. Tense silence. CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise … |\n| Sound Effects | Tiếng cổng sắt rít lên một tiếng kẽo kẹt chậm rãi. Mọi âm thanh ồn ào bên trong chợt tắt. Chỉ còn lại tiếng gió hiu hắt. | SFX: Slow, heavy creak of an iron gate. All background noise inside the house stops. Only wind remains. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Narration | Một bóng người cao lớn lẳng lặng bước vào, che khuất ánh sáng yếu ớt ngoài cửa. Sát khí vô hình nhưng lạnh thấu xương lan tỏa khắp căn phòng. | CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind … |\n| Dialogue | **Tên Côn Đồ 1 (quay lại, giọng khó chịu):** Thằng nào đấy? Muốn chết à... | Tone: Annoyed, aggressive. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| Sound Effects | Một tiếng *vút* nhẹ trong không khí. Tiếng xương gãy *rắc* gọn gàng. Tên côn đồ ngã vật xuống đất, không một tiếng rên. | SFX: A soft *whoosh*. A clean, sharp bone crack. A heavy body thud. Silence. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Dialogue | **Diệp Trần (giọng nói không một chút cảm xúc, lạnh như băng):** Cút. | Tone: Emotionless, ice-cold. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| Narration | Chỉ một từ. Nhưng đám côn đồ còn lại cảm thấy như rơi vào hầm băng vạn năm. Chúng hoảng loạn vứt bỏ vũ khí, giẫm đạp lên nhau bỏ chạy. | CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind … |\n| Sound Effects | Tiếng vũ khí kim loại rơi lảng xoảng trên nền nhà. Tiếng chân chạy thục mạng, hỗn loạn, vấp ngã. Tiếng cửa bị xô ra thô bạo. | SFX: Clatter of dropped metal weapons. Frantic, stumbling footsteps. A door being violently thrown open. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| BGM | Giai điệu piano lúc đầu vang lên trở lại, nhưng lần này ấm áp và chứa chan hy vọng. | Music: The initial piano theme returns, but warmer, more hopeful. CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise … |\n| Sound Effects | Tiếng bước chân Diệp Trần chậm rãi tiến lại gần. Tiếng sột soạt khi anh quỳ một gối xuống. | SFX: Slow, deliberate footsteps approaching. The rustle of cloth as he kneels. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Dialogue | **Bà Diệp (giọng ngỡ ngàng, run rẩy):** Trần... Trần nhi? Có... có phải là con không? | Tone: Disbelieving, trembling. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| Dialogue | **Diệp Trần (giọng nghẹn lại, đầy đau xót):** Cha, mẹ... con bất hiếu... đã để hai người chịu khổ rồi. | Tone: Choked with emotion, full of pain. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| **SCENE 4** | **MẦM HỌA KỶ GIA** |  |\n| Transition | Âm thanh tiếng khóc đoàn tụ của gia đình Diệp Trần mờ dần, chuyển thành tiếng nhạc jazz du dương, sang trọng. | TRANSITION: Sound of crying fades and crossfades into smooth, classy jazz music. CapCut FX: Whoosh Short, Flash Transition, Riser Hit, Cinematic Drop, Wind Sweep … |\n| Sound Effects | Tiếng ly thủy tinh va vào nhau lanh lảnh. Tiếng đá viên khuấy nhẹ trong ly rượu. Tiếng lật trang giấy của một tập tài liệu. | SFX: Clinking of glasses, ice cubes stirring in a drink, pages of a document being turned. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Narration | Tại tầng cao nhất của tòa nhà Kỷ thị, Kỷ Thiếu - kẻ thù năm xưa của Diệp Trần - đang nhàn nhã thưởng thức ly rượu mạnh. Hắn giờ đã là người thừa kế của một đế chế kinh doanh khổng lồ. | CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind … |\n| Sound Effects | Cánh cửa phòng bật mở. Một tên côn đồ mặt mũi bầm dập, sợ hãi lao vào. Tiếng thở hổn hển, gấp gáp của hắn phá vỡ không gian yên tĩnh. | SFX: Door bursts open. A bruised man runs in, panting heavily, disrupting the quiet atmosphere. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Dialogue | **Tên Côn Đồ (lắp bắp, thở không ra hơi):** Kỷ... Kỷ thiếu! Không xong rồi! Thằng... thằng con trai của Diệp gia... nó trở về rồi! Bọn em... bọn em bị nó... | Tone: Stuttering, breathless with fear. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| BGM | Nhạc Jazz tắt hẳn. Một nốt nhạc trầm, dài và đáng ngại vang lên. | Music: Jazz cuts. A long, ominous low note plays and holds. CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise … |\n| Sound Effects | Kỷ Thiếu đặt mạnh ly rượu xuống bàn kính, tạo ra một tiếng *cốc* sắc lạnh. | SFX: A sharp, loud *clack* as a glass is put down hard on a glass table. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |\n| Dialogue | **Kỷ Thiếu (ban đầu ngạc nhiên, rồi chuyển sang cười khẩy, giọng đầy tàn nhẫn):** Diệp Trần? Hắn ta trở về? [cười nhẹ] Tốt lắm. Ta còn đang lo không có trò gì vui để tiêu khiển. Chuẩn bị xe đi. | Tone: Surprised, then shifts to a cold, cruel smirk. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| Dialogue | **Tên Côn Đồ (run sợ):** Thiếu gia... chúng ta làm gì ạ? | Tone: Trembling with fear. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| Dialogue | **Kỷ Thiếu (giọng chậm rãi, hiểm độc):** Tới lúc... dẫm nát con giun cuối cùng của Diệp gia rồi. | Tone: Slow, venomous. CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background … |\n| BGM | Nhạc nền dồn dập, kịch tính nổi lên, báo hiệu một cuộc đối đầu sắp xảy ra. | Music: Dramatic, driving outro music swells. CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise … |\n| Sound Effects | Âm thanh ly rượu bị bóp nát trong tay Kỷ Thiếu. | SFX: Sound of glass shattering in a clenched fist. Fades out with music. CapCut FX: Door Open, Footsteps, Sword Clash, Explosion, Wind Whoosh … |",
+          "assets": {
+            "scenes": [
+              {
+                "scene": "Hỗn Loạn Trở Về",
+                "image_prompt": "Một người đàn ông mặc cổ phục sang trọng, tóc dài, ánh mắt sắc bén, đứng giữa một con hẻm tối tăm bẩn thỉu của thành phố hiện đại. Xung quanh anh, không khí như gợn sóng, tàn dư của một vết nứt không gian đang mờ dần. Phong cách donghua, nét vẽ hiện thực, chi tiết.",
+                "sfx_prompt": "Âm thanh xé rách không gian, gió gào thét, sau đó là sự im lặng đột ngột và tiếng nước nhỏ giọt, còi xe cứu thương từ xa.",
+                "characters": [
+                  "Diệp Trần"
+                ]
+              },
+              {
+                "scene": "Gia Tộc Tàn Phai",
+                "image_prompt": "Góc nhìn từ sau lưng Diệp Trần, anh đang đứng ở đầu một con phố cũ, nhìn về phía một ngôi nhà nhỏ đã xuống cấp. Trước cửa nhà, một cặp vợ chồng trung niên già yếu đang bị mấy tên côn đồ xăm trổ hung hăng vây quanh, một tên đang giơ tay định tát. Phong cách donghua.",
+                "sfx_prompt": "Tiếng la hét chửi rủa, tiếng khóc nức nở của người phụ nữ, tiếng gió hiu hắt thổi qua con phố vắng vẻ.",
+                "characters": [
+                  "Diệp Trần",
+                  "Ông Diệp",
+                  "Bà Diệp",
+                  "Côn Đồ"
+                ]
+              },
+              {
+                "scene": "Cơn Giận Của Đế Tôn",
+                "image_prompt": "Bên trong ngôi nhà tồi tàn, Diệp Trần đứng bình thản, một tay chắp sau lưng, ánh mắt lạnh như băng. Xung quanh anh, đám côn đồ nằm la liệt trên sàn trong những tư thế kỳ quái, vũ khí văng tung tóe. Cha mẹ anh đứng phía sau, vẻ mặt kinh ngạc và hoang mang. Phong cách donghua, tập trung vào biểu cảm đối lập giữa sự bình tĩnh của Diệp Trần và sự hỗn loạn xung quanh.",
+                "sfx_prompt": "Sự im lặng đáng sợ sau hỗn loạn, chỉ còn tiếng rên rỉ yếu ớt và tiếng vũ khí rơi lảng xoảng trên sàn nhà.",
+                "characters": [
+                  "Diệp Trần",
+                  "Ông Diệp",
+                  "Bà Diệp",
+                  "Côn Đồ"
+                ]
+              },
+              {
+                "scene": "Mầm Họa Kỷ Gia",
+                "image_prompt": "Trong một căn phòng penthouse sang trọng với cửa sổ kính lớn nhìn ra thành phố về đêm, một thanh niên đẹp trai nhưng gian xảo (Kỷ Thiếu) ngồi trên ghế sofa da, tay cầm ly rượu. Hắn đang nhếch mép cười đầy ác ý khi nghe một tên côn đồ bầm dập quỳ dưới đất báo cáo. Ánh sáng từ thành phố chiếu vào làm nổi bật nụ cười hiểm độc của hắn. Phong cách donghua.",
+                "sfx_prompt": "Tiếng nhạc jazz nhẹ nhàng, tiếng ly thủy tinh va chạm, tiếng thở hổn hển sợ hãi của tên côn đồ, và cuối cùng là tiếng ly vỡ.",
+                "characters": [
+                  "Kỷ Thiếu",
+                  "Côn Đồ"
+                ]
+              }
+            ]
+          },
+          "tts_text": "Người dẫn chuyện: Giữa hư không vô tận, một bàn tay xé toạc màn đêm. Từ trong vết nứt, một bóng người bước ra. Đó là Diệp Trần, Vô Thượng Đế Tôn, kẻ đứng trên đỉnh vạn giới. Vạn năm ở Tu Tiên Giới... chỉ là mười năm ở Trái Đất. Diệp Trần hít một hơi thật sâu. Không khí khô khốc, mỏng manh và gần như không có chút linh khí nào. Sức mạnh trong cơ thể anh bị một quy tắc vô hình áp chế, chỉ còn lại chưa tới một phần trăm. Diệp Trần, nói với chính mình, giọng khàn và trầm: Trở về rồi... Cha, mẹ... con về rồi đây. Người dẫn chuyện: Ký ức dẫn lối Diệp Trần về khu phố xưa, nhưng dinh thự nguy nga của Diệp gia đã biến mất, thay vào đó là một căn nhà cấp bốn nhỏ bé, cũ nát. Cánh cổng sắt hoen gỉ, bức tường loang lổ vết mưa. Tên Côn Đồ 1, gằn giọng: Ông bà già! Có nghe không hả? Kỷ thiếu gia cho hạn cuối cùng hôm nay! Không giao sổ đỏ thì đừng trách sao bọn này ác! Ông Diệp, giọng yếu ớt, cố gắng cứng rắn: Các cậu... các cậu đừng ép người quá đáng! Diệp gia chúng tôi dù sao cũng... Tên Côn Đồ 2, cười khẩy: Diệp gia? Cái gia tộc tàn mạt đó mà còn dám nhắc tới à? Mau đưa đây! Người dẫn chuyện: Một bóng người cao lớn lẳng lặng bước vào, che khuất ánh sáng yếu ớt ngoài cửa. Sát khí vô hình nhưng lạnh thấu xương lan tỏa khắp căn phòng. Tên Côn Đồ 1, giọng khó chịu: Thằng nào đấy? Muốn chết à... Diệp Trần, giọng nói không một chút cảm xúc, lạnh như băng: Cút. Người dẫn chuyện: Chỉ một từ. Nhưng đám côn đồ còn lại cảm thấy như rơi vào hầm băng vạn năm. Chúng hoảng loạn vứt bỏ vũ khí, giẫm đạp lên nhau bỏ chạy. Bà Diệp, giọng ngỡ ngàng, run rẩy: Trần... Trần nhi? Có... có phải là con không? Diệp Trần, giọng nghẹn lại, đầy đau xót: Cha, mẹ... con bất hiếu... đã để hai người chịu khổ rồi. Người dẫn chuyện: Tại tầng cao nhất của tòa nhà Kỷ thị, Kỷ Thiếu - kẻ thù năm xưa của Diệp Trần - đang nhàn nhã thưởng thức ly rượu mạnh. Hắn giờ đã là người thừa kế của một đế chế kinh doanh khổng lồ. Tên Côn Đồ, lắp bắp, thở không ra hơi: Kỷ... Kỷ thiếu! Không xong rồi! Thằng... thằng con trai của Diệp gia... nó trở về rồi! Bọn em... bọn em bị nó... Kỷ Thiếu, ban đầu ngạc nhiên, rồi chuyển sang cười khẩy, giọng đầy tàn nhẫn: Diệp Trần? Hắn ta trở về? (cười nhẹ) Tốt lắm. Ta còn đang lo không có trò gì vui để tiêu khiển. Chuẩn bị xe đi. Tên Côn Đồ, run sợ: Thiếu gia... chúng ta làm gì ạ? Kỷ Thiếu, giọng chậm rãi, hiểm độc: Tới lúc... dẫm nát con giun cuối cùng của Diệp gia rồi."
+        },
+        {
+          "index": 2,
+          "title": "Tập 2: Cái Tát Đầu Tiên",
+          "summary": "Đối mặt với Kỷ Thiếu đến tận nhà sỉ nhục, Diệp Trần dùng thực lực nghiền nát đám vệ sĩ chuyên nghiệp, gieo rắc nỗi sợ hãi đầu tiên vào lòng kẻ thù. Nhận ra pháp bảo đã mất thiêng vì linh khí cạn kiệt, anh quyết định đến một buổi đấu giá ngọc thạch để tìm vật liệu luyện khí, nơi anh chắc chắn sẽ tái ngộ Kỷ gia.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        },
+        {
+          "index": 3,
+          "title": "Tập 3: Ngọc Báu Ẩn Tàng",
+          "summary": "Tại buổi đấu giá, Diệp Trần bị giới thượng lưu khinh miệt nhưng lại dùng tuệ nhãn nhìn thấu một khối nguyên thạch bỏ đi chứa đầy linh khí, đoạt lấy nó ngay trước mũi Kỷ Thiếu. Từ khối ngọc, anh luyện ra một tấm bùa hộ mệnh cho cha mẹ, đồng thời hành tung bí ẩn của anh đã lọt vào mắt một lão võ sư ẩn mình trong buổi đấu giá.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        },
+        {
+          "index": 4,
+          "title": "Tập 4: Tình Cũ Nghĩa Mới",
+          "summary": "Diệp Trần tìm lại Chú Ba, thuộc hạ trung thành năm xưa của gia đình, giúp chú bảo vệ sản nghiệp nhỏ khỏi sự chèn ép của Kỷ gia và có được thông tin quan trọng về các hoạt động phi pháp của chúng. Cùng lúc, vị lão võ sư tìm đến thách đấu, nhưng bị Diệp Trần khuất phục hoàn toàn và cam tâm đi theo, trở thành trợ thủ đắc lực đầu tiên.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        },
+        {
+          "index": 5,
+          "title": "Tập 5: Sát Thủ Lộ Diện",
+          "summary": "Kỷ Lão, cha của Kỷ Thiếu, nhận ra sự bất thường của Diệp Trần và thuê một sát thủ ngoại quốc có sức mạnh dị thường đến ám sát. Trong trận chiến, Diệp Trần phát hiện vũ khí của kẻ địch có thể gây nhiễu loạn linh lực của mình, chứng tỏ Kỷ gia được một thế lực bí ẩn khác chống lưng.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        },
+        {
+          "index": 6,
+          "title": "Tập 6: Thiên Môn Xuất Hiện",
+          "summary": "Diệp Trần cùng hai trợ thủ đột kích một kho hàng của Kỷ gia, không chỉ đối đầu với tay chân bình thường mà còn cả hai tu sĩ cấp thấp. Anh bắt sống một tên, qua tra khảo biết được kẻ chống lưng cho Kỷ gia là Thiên Môn, một tổ chức tu chân cổ đại đang âm thầm thao túng Trái Đất.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        },
+        {
+          "index": 7,
+          "title": "Tập 7: Phá Vỡ Nghi Lễ",
+          "summary": "Theo tin tức, Diệp Trần đột nhập mật địa của Thiên Môn hòng phá hoại nghi lễ truyền công cho Kỷ Lão, trực tiếp đối đầu với lão và một trưởng lão của tổ chức. Anh đả bại chúng nhưng kẻ địch đã kịp tiết lộ rằng tai nạn mười năm trước không đơn thuần là tranh chấp thương trường, mà là một âm mưu lớn hơn nhắm vào chính anh.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        },
+        {
+          "index": 8,
+          "title": "Tập 8: Cái Giá Của Sự Tức Giận",
+          "summary": "Để trả đũa, Thiên Môn bắt cóc cha mẹ Diệp Trần, buộc anh phải một mình xông vào trụ sở của chúng, nơi được bố trí trận pháp áp chế tu vi. Dù cứu được người thân, Diệp Trần cũng bị trọng thương bởi một trận pháp uy lực, khiến anh nhận ra thực lực 1% hiện tại là không đủ.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        },
+        {
+          "index": 9,
+          "title": "Tập 9: Mắt Bão Kỷ Gia",
+          "summary": "Để chữa thương và đột phá giới hạn, Diệp Trần cần hấp thụ nguồn linh khí khổng lồ từ linh mạch của thành phố, nơi mà Kỷ gia đã xây dựng tòa tháp trụ sở toàn cầu ngay trên đó. Anh lên kế hoạch tấn công tổng lực, biết rằng đây là canh bạc sinh tử sẽ kinh động toàn bộ Thiên Môn.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        },
+        {
+          "index": 10,
+          "title": "Tập 10: Phán Quyết Của Đế Tôn",
+          "summary": "Trong trận chiến cuối cùng tại đỉnh tòa tháp, Diệp Trần mượn sức mạnh linh mạch để tạm thời khôi phục một phần sức mạnh Đế Tôn, đánh bại trưởng lão Thiên Môn và phế truất Kỷ Lão. Trước khi gục ngã, vị trưởng lão tiết lộ sự thật động trời: Thiên Môn rút cạn linh khí Trái Đất là để gia cố một phong ấn cổ đại ngăn chặn một hiểm họa ngoài vũ trụ.",
+          "script_text": "",
+          "assets": {
+            "scenes": []
+          },
+          "tts_text": ""
+        }
+      ]
+    }
+  ],
+  "aspect_ratio": "16:9",
+  "donghua_style": true,
+  "character_bible": {
+    "characters": []
+  }
+}

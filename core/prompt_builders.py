@@ -68,28 +68,34 @@ Viết kịch bản AUDIO-FIRST cho tập: "{ep_title}" dựa trên dàn ý: "{e
 {chosen}
 
 {preset_info}
+YÊU CẦU CHI TIẾT CHO FULL_SCRIPT:
+- Viết kịch bản **audio-first**, trong đó mỗi hành động, chuyển động hay phản ứng đều được diễn tả bằng **micro-actions** ngắn và có **âm thanh gợi tả** đi kèm.
+- Khi nhân vật làm gì, hãy mô tả cả **cảm giác – tiếng động – không gian** (VD: tiếng gió, tiếng chân, tiếng áo lụa, hơi thở, tiếng va chạm…).
+- Luôn có các dòng `Sound Effects`, `BGM`, `Transition` đan xen để người nghe cảm nhận được không khí.
+- Lời thoại cần tự nhiên, có biểu cảm và cảm xúc giọng (VD: [khẽ run], [giọng thấp], [cười nhẹ], [ngập ngừng]…).
+- Mỗi cảnh nên có tiết tấu rõ: mở cảnh → hành động → đối thoại → âm → kết cảnh.
+- Không đưa ví dụ cụ thể nào vào kịch bản; chỉ áp dụng nguyên tắc trên khi viết.
 
-YÊU CẦU:
-- Format bảng 3 cột (Markdown table): hàng tiêu đề CHÍNH XÁC là
-  `| Content Type | Detailed Content | Technical Notes |`
-  và ngay dưới là hàng gạch `|---|---|---|`.
-- Mỗi hàng là một bước thuộc một cảnh (SCN): Narration / Dialogue / Sound Effects / Voice System / BGM / Transition.
-- Không chèn bất kỳ văn bản ngoài bảng trong FULL_SCRIPT (không title, không chú thích).
-- Diễn đạt Việt hoá hoàn toàn các thuật ngữ hệ thống: Cấp độ, Lớp, Nhân tính, Tha hoá, Nhiệm vụ, Mục tiêu, Phần thưởng, Kích hoạt, Hoàn tất.
-- Phong cách audio-first: ưu tiên âm thanh dẫn hướng, hành động vật lý, nhịp đối thoại, cắt cảnh mượt.
+ĐẦU RA PHẢI LÀ JSON GỒM 3 KHÓA:
+- **FULL_SCRIPT**: Bảng Markdown 3 cột như hướng dẫn, với các dòng {"Narration", "Dialogue", "Sound Effects", "BGM", "Transition"} thể hiện diễn tiến từng hành động.
+- **ASSETS**: Danh sách scene (cho phần hình và âm thanh) dạng:
+  [
+    {{
+      "scene": "Tên cảnh ngắn gọn",
+      "image_prompt": "Mô tả khung cảnh hoặc nhân vật để vẽ 1 keyframe",
+      "sfx_prompt": "Gợi ý SFX / ambience chính của cảnh",
+      "characters": ["Tên 1", "Tên 2"]
+    }}
+  ]
+  * Lưu ý: image_prompt cần đồng bộ với Character Bible, nét Á Đông (donghua style), tránh siêu thực Tây phương.
+- **TTS**: Phiên bản đọc liền mạch (không Markdown), ưu tiên dễ nghe, nhịp rõ, tự nhiên.
 
-Xuất theo 3 phần (JSON):
-(A) FULL_SCRIPT: ~900–1400 từ, **chỉ** là Markdown table 3 cột như yêu cầu.
-(B) ASSETS: danh sách scene [{{
-  "scene":"Tên cảnh",
-  "image_prompt":"mô tả tranh minh hoạ (donghua/cel-shaded, nét Á Đông, màu chủ đạo)...",
-  "sfx_prompt":"gợi ý ambience/Foley/BGM/transition...",
-  "characters":["Tên 1","Tên 2", ...]
-}}]
-(C) TTS: bản rút gọn ~6–9 phút (chỉ thoại + narration, không SFX)
-
-Trả về JSON: {{"FULL_SCRIPT":"...","ASSETS":[{{"scene":"...","image_prompt":"...","sfx_prompt":"...","characters":["..."]}}], "TTS":"..."}}
-KHÔNG thêm lời dẫn, KHÔNG markdown ngoài giá trị FULL_SCRIPT (vốn là bảng Markdown).
+TRẢ VỀ JSON DUY NHẤT (định dạng chính xác):
+{{
+  "FULL_SCRIPT": "| Content Type | Detailed Content | Technical Notes |\\n|---|---|---|\\n…",
+  "ASSETS": [{{"scene":"…","image_prompt":"…","sfx_prompt":"…","characters":["…"]}}],
+  "TTS": "…"
+}}
 """.strip()
 
 

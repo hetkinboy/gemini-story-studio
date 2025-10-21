@@ -26,43 +26,78 @@ except Exception:
 
 def _normalize_to_table(text: str) -> str:
     """
-    Chuẩn hoá nội dung thành bảng Markdown 3 cột:
-    | Content Type | Detailed Content | Technical Notes |
-    + Tự động thêm gợi ý FX và BGM (CapCut).
+    Chuẩn hoá về bảng 3 cột + tự chèn gợi ý CapCut (FX + BGM) CHO TỪNG HÀNG,
+    kể cả khi input đã là bảng Markdown.
+    Không thêm/xoá hàng; chỉ bổ sung gợi ý vào cột Technical Notes nếu thiếu.
     """
     import re
-    from core.text_utils import capcut_sfx_name
+    from core.text_utils import capcut_sfx_name  # gợi ý FX có sẵn
 
     if not text:
         return ""
 
-    lines = [
-        "| Content Type | Detailed Content | Technical Notes |",
-        "|---|---|---|",
-    ]
-
-    # mapping BGM gợi ý riêng (CapCut BGM)
-    capcut_bgm_map = {
-        "narration": "CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind, Story Theme …",
-        "dialogue": "CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background …",
-        "voice system": "CapCut BGM: Digital Drone, Synth Pad, Sci-Fi Ambient, Echo Pulse …",
-        "bgm": "CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise …",
-        "sound effects": "CapCut FX: Sword Clash, Footsteps, Explosion, Whoosh Short …",
-        "transition": "CapCut FX: Flash Transition, Wind Sweep, Page Turn …",
+    # Gợi ý BGM theo loại
+    CAPCUT_BGM_MAP = {
+        "narration":   "CapCut BGM: Calm Piano, Emotional Strings, Ambient Pad, Soft Wind …",
+        "dialogue":    "CapCut BGM: Soft Piano, Gentle Guitar, Light Ambient, Romantic Background …",
+        "voice system":"CapCut BGM: Digital Drone, Synth Pad, Sci-Fi Ambient, Echo Pulse …",
+        "bgm":         "CapCut BGM: Epic Battle, Dark Ambient, Mystery Drone, Cinematic Rise …",
     }
+    CAPCUT_FX_FALLBACK = "CapCut FX: Whoosh Short, Flash Transition, Riser Hit …"
 
-    # kiểm tra nếu đã có header thì không cần thêm lại
-    if re.search(r'^\|\s*Content Type\s*\|\s*Detailed Content\s*\|\s*Technical Notes', text, flags=re.I | re.M):
-        raw_lines = [l for l in text.splitlines() if not l.strip().startswith("|---")]
-        for ln in raw_lines:
-            if not ln.strip():
-                continue
-            if "Content Type" in ln:
-                continue
-            lines.append(ln)
-        return "\n".join(lines)
+    def _bgm_hint(ctype_lc: str) -> str:
+        for k, v in CAPCUT_BGM_MAP.items():
+            if k in ctype_lc:
+                return v
+        return ""
 
-    # xử lý từ raw text
+    def _augment_notes(ctype: str, notes: str) -> str:
+        """Ghép thêm CapCut FX/BGM nếu notes chưa có."""
+        c_lc = (ctype or "").strip().lower()
+        notes = notes or ""
+        if "capcut" in notes.lower():
+            return notes  # đã có gợi ý, giữ nguyên
+
+        fx_hint = capcut_sfx_name(ctype) or ""
+        if "transition" in c_lc and not fx_hint:
+            fx_hint = CAPCUT_FX_FALLBACK
+        bgm_hint = _bgm_hint(c_lc)
+
+        # Quy tắc: SFX/Transition → ưu tiên FX; Narration/Dialogue/BGM/Voice → BGM
+        extra = fx_hint if any(k in c_lc for k in ["sound effects", "transition"]) else bgm_hint
+        merged = (notes + (" " + extra if extra else "")).strip()
+        return merged
+
+    header_regex = r'^\|\s*Content Type\s*\|\s*Detailed Content\s*\|\s*Technical Notes\s*\|\s*$'
+    has_header = bool(re.search(header_regex, text, flags=re.I | re.M))
+
+    out = ["| Content Type | Detailed Content | Technical Notes |", "|---|---|---|"]
+
+    if has_header:
+        # Parse lại bảng hiện có -> augment notes cho từng hàng
+        for ln in text.splitlines():
+            line = ln.strip()
+            if not line or line.startswith("|---"):
+                continue
+            if re.search(header_regex, line, flags=re.I):
+                continue
+            if not line.startswith("|"):
+                continue
+
+            cols = [c.strip() for c in line.strip("|").split("|")]
+            if len(cols) < 3:
+                continue
+            ctype, content, notes = cols[:3]
+
+            notes2 = _augment_notes(ctype, notes)
+            # Escape '|' để không vỡ bảng
+            content2 = (content or "").replace("|", r"\|")
+            notes2 = (notes2 or "").replace("|", r"\|")
+            out.append(f"| {ctype} | {content2} | {notes2} |")
+        return "\n".join(out)
+
+    # Input chưa là bảng → chuyển từng dòng + bơm gợi ý
+    rows = []
     for raw in text.splitlines():
         s = raw.strip()
         if not s:
@@ -78,32 +113,19 @@ def _normalize_to_table(text: str) -> str:
             ctype, content = "Voice System", s.split(":", 1)[1].strip()
         elif low.startswith("sfx:") or s.startswith("[SFX]"):
             ctype = "Sound Effects"
-            if s.startswith("[SFX]") and "]" in s:
-                content = s.split("]", 1)[1].strip()
-            else:
-                content = s.split(":", 1)[1].strip()
+            content = s.split("]", 1)[1].strip() if s.startswith("[SFX]") and "]" in s else s.split(":", 1)[1].strip()
         elif low.startswith("bgm:"):
             ctype, content = "BGM", s.split(":", 1)[1].strip()
         elif low.startswith("transition:"):
             ctype, content = "Transition", s.split(":", 1)[1].strip()
 
-        # Gợi ý FX (cũ)
-        capcut_hint_fx = capcut_sfx_name(ctype)
+        notes2 = _augment_notes(ctype, notes)
+        rows.append((ctype, content, notes2))
 
-        # Gợi ý nhạc (mới)
-        capcut_hint_bgm = ""
-        for k, v in capcut_bgm_map.items():
-            if k in low:
-                capcut_hint_bgm = v
-                break
+    for ctype, content, notes in rows:
+        out.append(f"| {ctype} | {str(content).replace('|', r'\\|')} | {str(notes).replace('|', r'\\|')} |")
 
-        # hợp nhất ghi chú
-        all_notes = " ".join([notes, capcut_hint_fx, capcut_hint_bgm]).strip()
-        all_notes = all_notes.replace("|", r"\|")
-
-        lines.append(f"| {ctype} | {content.replace('|', r'\\|')} | {all_notes} |")
-
-    return "\n".join(lines)
+    return "\n".join(out)
 
 
 def _assets_list_from_json(data: dict) -> list:
