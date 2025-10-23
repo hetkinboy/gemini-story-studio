@@ -319,37 +319,83 @@ def _render_character_bible_block(model, proj: Project, ep: Episode, sidx: int, 
 
 def _gen_veo_for_scene(model, proj: Project, ep: Episode, sc: dict, max_segments: int = 3) -> dict:
     """
-    Gọi Gemini để sinh segments cho Veo 3.1 từ scene.
-    Trả về scene đã gắn: veo_prompt, veo31_segments (hoặc veo_raw_response nếu schema sai).
+    Gọi Gemini để sinh segments Veo 3.1 từ scene.
+    Mỗi segment tương ứng với 1 frame/keyframe chi tiết, có prompt đồng bộ hình ảnh.
     """
     sc_name = sc.get("scene", "Cảnh")
     scene_text = sc.get("image_prompt", "") or sc.get("sfx_prompt", "") or ep.summary
     char_in_scene = sc.get("characters", [])
 
-    veo_prompt = build_veo31_segments_prompt(
-        ep_title=ep.title,
-        scene_name=sc_name,
-        scene_text=scene_text,
-        max_segments=max_segments,
-        aspect_ratio=proj.aspect_ratio,
-        donghua_style=proj.donghua_style,
-        character_bible=proj.character_bible,
-        characters_in_scene=char_in_scene
-    )
-    sc["veo_prompt"] = veo_prompt
-
-    # Gọi model và bắt lỗi rõ ràng
+    # 1️⃣ Tách keyframes tương ứng scene
     try:
-        data = gemini_json(model, veo_prompt)
-        if isinstance(data, dict) and isinstance(data.get("segments"), list):
-            sc["veo31_segments"] = data["segments"]
-        else:
-            sc["veo31_segments"] = []
-            sc["veo_raw_response"] = data
+        txt_block, frame_list = _compose_scene_image_prompts(proj, ep)
+        # chỉ lấy frames thuộc scene hiện tại
+        frames = [f for f in frame_list if f["scene"] == sc_name]
+    except Exception:
+        frames = []
+
+    # 2️⃣ Nếu không có frame riêng, fallback 1 frame duy nhất
+    if not frames:
+        frames = [{
+            "scene": sc_name,
+            "frame": 1,
+            "frame_name": f"{sc_name} — Frame 1",
+            "characters": char_in_scene,
+            "image_prompt": _styleize_image_prompt(
+                base=scene_text,
+                aspect_ratio=proj.aspect_ratio,
+                donghua_style=proj.donghua_style,
+                characters=char_in_scene,
+                character_bible=proj.character_bible or {}
+            )
+        }]
+
+    # 3️⃣ Sinh prompt tổng cho Veo (mô tả cách chia segment theo frame)
+    veo_header_prompt = f"""
+Bạn là đạo diễn tiền kỳ Veo 3.1.
+Phân tích cảnh: **{sc_name}**
+Từ các frame key sau, hãy tạo segments video liền mạch (mỗi frame = 1 segment ~8 giây).
+Mỗi segment phải mô tả:
+- hành động / biểu cảm nhân vật
+- chuyển động camera
+- ánh sáng, âm thanh / ambience
+- continuity giữa frame trước & sau
+- phong cách: donghua, 24fps cinematic
+
+Danh sách keyframe:
+{json.dumps([f["image_prompt"] for f in frames], ensure_ascii=False, indent=2)}
+
+Trả về JSON duy nhất:
+{{
+  "scene": "{sc_name}",
+  "segments": [
+    {{
+      "title": "ngắn gọn 3–7 từ",
+      "duration_sec": 8,
+      "characters": ["Tên A","Tên B"],
+      "veo_prompt": "mô tả shot chi tiết theo frame này, continuity, 24fps, {proj.aspect_ratio}",
+      "sfx": "ambience/SFX gợi ý",
+      "notes": "continuity / camera / ánh sáng"
+    }}
+  ]
+}}
+    """.strip()
+
+    # 4️⃣ Gọi Gemini model
+    try:
+        veo_result = gemini_json(model, veo_header_prompt)
     except Exception as e:
-        sc["veo31_segments"] = []
         sc["veo_error"] = str(e)
-        raise
+        veo_result = None
+
+    # 5️⃣ Lưu kết quả vào scene
+    sc["veo_prompt"] = veo_header_prompt
+    if isinstance(veo_result, dict) and isinstance(veo_result.get("segments"), list):
+        sc["veo31_segments"] = veo_result["segments"]
+    else:
+        sc["veo31_segments"] = []
+        sc["veo_raw_response"] = veo_result
+
     return sc
 
 
@@ -390,26 +436,59 @@ def _styleize_image_prompt(base: str, aspect_ratio: str, donghua_style: bool, ch
     )
 
 def _compose_scene_image_prompts(proj: Project, ep: Episode):
-    """Trả về (text_block, json_list) các prompt ảnh theo cảnh."""
+    """
+    Sinh danh sách prompt ảnh chi tiết (keyframes) từ 1 scene:
+    - Mỗi Narration / Sound Effects → 1 frame riêng.
+    - Bảo toàn characters + phong cách.
+    """
     scenes = (ep.assets or {}).get("scenes", []) or []
     out_lines, out_json = [], []
     for i, sc in enumerate(scenes, 1):
         name = sc.get("scene", f"Cảnh {i}")
-        base_imgp = sc.get("image_prompt") or sc.get("sfx_prompt") or ep.summary
+        base_text = sc.get("image_prompt", "") or sc.get("sfx_prompt", "") or ep.summary
         chars = sc.get("characters", [])
-        full_imgp = _styleize_image_prompt(
-            base=base_imgp,
-            aspect_ratio=proj.aspect_ratio,
-            donghua_style=proj.donghua_style,
-            characters=chars,
-            character_bible=proj.character_bible or {}
-        )
-        out_lines.append(
-            f"## Scene {i}: {name}\n"
-            f"- Characters: {', '.join(chars) if chars else '(none)'}\n"
-            f"- Image Prompt:\n{full_imgp}\n"
-        )
-        out_json.append({"index": i, "scene": name, "characters": chars, "image_prompt": full_imgp})
+
+        # Lấy nội dung script tương ứng scene này để chia nhỏ frame
+        raw_script = (ep.script_text or "")
+        # tìm các dòng chứa từ khóa trong tên scene
+        sublines = []
+        for ln in raw_script.splitlines():
+            if not ln.strip().startswith("|"):
+                continue
+            if any(k in ln for k in [name.split()[0], "Narration", "Sound Effects"]):
+                sublines.append(ln)
+        # nếu không có -> 1 frame
+        if not sublines:
+            sublines = [base_text]
+
+        for j, ln in enumerate(sublines, 1):
+            desc = ln
+            if "|" in ln:
+                parts = [p.strip() for p in ln.strip("|").split("|")]
+                if len(parts) >= 2:
+                    desc = parts[1]
+            # hợp nhất style + char
+            full_prompt = _styleize_image_prompt(
+                base=desc,
+                aspect_ratio=proj.aspect_ratio,
+                donghua_style=proj.donghua_style,
+                characters=chars,
+                character_bible=proj.character_bible or {}
+            )
+            frame_name = f"{name} — Frame {j}"
+            out_lines.append(
+                f"### Scene {i}: {frame_name}\n"
+                f"- Characters: {', '.join(chars) if chars else '(none)'}\n"
+                f"- Image Prompt:\n{full_prompt}\n"
+            )
+            out_json.append({
+                "scene_index": i,
+                "scene": name,
+                "frame": j,
+                "frame_name": frame_name,
+                "characters": chars,
+                "image_prompt": full_prompt
+            })
     return ("\n".join(out_lines)).strip(), out_json
 
 
